@@ -40,7 +40,24 @@ npm run dev
 - `DASHSCOPE_API_KEY`：阿里百炼 API Key（用于轻量个性化计划）
 - `DASHSCOPE_MODEL`：默认 `qwen-plus`
 
-## 部署到 Cloudflare
+## 部署到 Cloudflare（推荐：GitHub 自动部署）
+
+推荐流程：本地只负责 `git push`，由 GitHub Actions 自动部署到 Cloudflare。
+
+1. 在 GitHub 仓库 `Settings -> Secrets and variables -> Actions` 新增两个 Secret：
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+2. 保持仓库中的 workflow 文件存在：
+- `.github/workflows/deploy-cloudflare.yml`
+3. 推送到 `main` 分支后，GitHub 会自动执行：
+- `npm run test:unit`
+- `npm run test:component`
+- `npm run build`
+- `npm run db:migrate:remote`
+- `npm run cf:deploy`
+4. 在 GitHub `Actions` 页面查看部署结果；成功后会更新 Cloudflare 的 Workers 版本。
+
+## 本地直连部署（可选）
 
 1. 登录 Cloudflare 并安装 Wrangler：`npm install -g wrangler`
 2. 创建 D1 数据库：`wrangler d1 create growthpilot-db`
