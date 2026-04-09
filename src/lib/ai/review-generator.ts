@@ -6,6 +6,7 @@ const defaultReviewInput: WeeklyReviewFallbackInput = {
   bestFocusPeriod: "20:00 - 22:00",
   dominantMoodLabel: "稳稳推进",
   averageEnergyLevel: 3,
+  recentNotes: [],
 };
 
 export async function generateWeeklyReview(
@@ -17,5 +18,6 @@ export async function generateWeeklyReview(
     bestFocusPeriod: input.bestFocusPeriod ?? defaultReviewInput.bestFocusPeriod,
     dominantMoodLabel: input.dominantMoodLabel ?? defaultReviewInput.dominantMoodLabel,
     averageEnergyLevel: input.averageEnergyLevel ?? defaultReviewInput.averageEnergyLevel,
+    recentNotes: input.recentNotes ?? defaultReviewInput.recentNotes,
   });
 }

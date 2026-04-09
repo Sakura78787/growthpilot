@@ -1,5 +1,14 @@
-﻿import { buildGoalPlan } from "@/lib/mock/seed-data";
+import type { GoalPlanSeed } from "@/lib/mock/seed-data";
+import { buildGoalPlan } from "@/lib/mock/seed-data";
 import type { GoalRequest } from "@/lib/validation/goals";
+
+export type GoalProfileSnapshot = {
+  currentLevel: GoalRequest["currentLevel"];
+  dailyMinutes: number;
+  mainBlocker: string;
+  planSource?: "llm" | "rules";
+  planReason?: string;
+};
 
 type BuildGoalGraphOptions = {
   now?: Date;
@@ -7,6 +16,8 @@ type BuildGoalGraphOptions = {
   nickname?: string;
   grade?: string;
   preferredFocusTime?: string;
+  plan?: GoalPlanSeed;
+  profileSnapshot?: GoalProfileSnapshot;
 };
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -35,8 +46,14 @@ export function buildGoalGraph(input: GoalRequest, options: BuildGoalGraphOption
   const userId = options.userId ?? DEFAULT_USER_ID;
   const goalId = crypto.randomUUID();
   const deadlineDate = parseDeadline(input.deadline, nowDate);
-  const goalPlan = buildGoalPlan({ title: input.title, category: input.category });
+  const goalPlan = options.plan ?? buildGoalPlan({ title: input.title, category: input.category });
   const totalDays = Math.max(1, Math.ceil((deadlineDate.getTime() - nowDate.getTime()) / DAY_IN_MS));
+
+  const snapshot: GoalProfileSnapshot = options.profileSnapshot ?? {
+    currentLevel: input.currentLevel,
+    dailyMinutes: input.dailyMinutes,
+    mainBlocker: input.mainBlocker,
+  };
 
   const user = {
     id: userId,
@@ -53,6 +70,7 @@ export function buildGoalGraph(input: GoalRequest, options: BuildGoalGraphOption
     title: input.title,
     category: input.category,
     deadline: input.deadline,
+    profileSnapshot: JSON.stringify(snapshot),
     priority: input.category === "discipline" ? "medium" : "high",
     status: "active",
     createdAt: nowDate,

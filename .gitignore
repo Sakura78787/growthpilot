@@ -5,6 +5,7 @@
 /coverage
 /test-results
 /.npm-cache
+/.wrangler
 /.superpowers
 /playwright-report
 *.log

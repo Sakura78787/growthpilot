@@ -2,6 +2,7 @@ import { asc, desc, eq } from "drizzle-orm";
 
 import type { AppDb } from "@/lib/db/client";
 import { buildGoalGraph } from "@/lib/db/mappers";
+import type { GoalProfileSnapshot } from "@/lib/db/mappers";
 import { goals, milestones, tasks, users } from "@/lib/db/schema";
 import type { GoalCategory, GoalPlanSeed } from "@/lib/mock/seed-data";
 import type { GoalRequest } from "@/lib/validation/goals";
@@ -252,8 +253,15 @@ export function buildGoalDetailViewModel(input: {
   };
 }
 
-export async function createGoalWithPlan(db: AppDb, input: GoalRequest) {
-  const graph = buildGoalGraph(input);
+export async function createGoalWithPlan(
+  db: AppDb,
+  input: GoalRequest,
+  options: {
+    plan?: GoalPlanSeed;
+    profileSnapshot?: GoalProfileSnapshot;
+  } = {},
+) {
+  const graph = buildGoalGraph(input, options);
 
   await db.insert(users).values(graph.user).onConflictDoNothing();
   await db.insert(goals).values(graph.goal);

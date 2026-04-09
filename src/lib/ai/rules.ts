@@ -4,6 +4,7 @@ export type WeeklyReviewFallbackInput = {
   bestFocusPeriod: string;
   dominantMoodLabel?: string;
   averageEnergyLevel?: number;
+  recentNotes?: string[];
 };
 
 export type WeeklyReviewFallback = {
@@ -34,6 +35,7 @@ export function buildWeeklyReviewFallback(input: WeeklyReviewFallbackInput): Wee
   const bestFocusPeriod = input.bestFocusPeriod.trim() || "20:00 - 22:00";
   const dominantMoodLabel = input.dominantMoodLabel?.trim();
   const averageEnergyLevel = normalizeEnergyLevel(input.averageEnergyLevel);
+  const recentNote = input.recentNotes?.map((item) => item.trim()).find((item) => item.length > 0);
 
   const moodSentence =
     dominantMoodLabel || averageEnergyLevel
@@ -54,8 +56,12 @@ export function buildWeeklyReviewFallback(input: WeeklyReviewFallbackInput): Wee
     highlights.push(`平均精力：${averageEnergyLevel}/5`);
   }
 
+  if (recentNote) {
+    highlights.push(`最近收获：${recentNote}`);
+  }
+
   return {
-    summary: `你本周已经完成了 ${completionRate}% 的关键动作，最稳定的高效时段是 ${bestFocusPeriod}。${moodSentence}`,
+    summary: `你本周已经完成了 ${completionRate}% 的关键动作，最稳定的高效时段是 ${bestFocusPeriod}。${recentNote ? `你在完成记录里提到：“${recentNote}”。` : ""}${moodSentence}`,
     advice: `下周请优先拆小“${topDelayReason}”相关任务，把每个动作压缩到 20 分钟以内开始；如果感觉状态起伏，就优先在 ${bestFocusPeriod} 安排最难开始的那一步。`,
     highlights,
   };

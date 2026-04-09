@@ -7,7 +7,8 @@
     {
       "binding": "DB",
       "database_name": "growthpilot-db",
-      "database_id": "REPLACE_AFTER_CREATION"
+      "database_id": "bc9c5e28-b1c5-4467-b947-28335939bd69",
+      "migrations_dir": "drizzle"
     }
   ]
 }

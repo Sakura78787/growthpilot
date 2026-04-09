@@ -9,6 +9,9 @@ describe("buildGoalGraph", () => {
         title: "做出两个能投产品经理暑期实习的项目",
         category: "job",
         deadline: "2026-04-30",
+        currentLevel: "starter",
+        dailyMinutes: 90,
+        mainBlocker: "不知道每天先做什么",
       },
       {
         now: new Date("2026-04-09T00:00:00.000Z"),
@@ -22,5 +25,6 @@ describe("buildGoalGraph", () => {
     expect(result.tasks[0]?.status).toBe("doing");
     expect(result.tasks.every((task) => task.goalId === result.goal.id)).toBe(true);
     expect(result.tasks[0]?.plannedDate).toBe("2026-04-09");
+    expect(JSON.parse(result.goal.profileSnapshot).mainBlocker).toBe("不知道每天先做什么");
   });
 });

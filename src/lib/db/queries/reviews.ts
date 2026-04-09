@@ -15,6 +15,7 @@ export type ReviewTaskSource = {
   status: string;
   delayReason: string | null;
   actualStartTime: string | null;
+  completionNote?: string | null;
 };
 
 export type ReviewTaskLogSource = {
@@ -31,6 +32,7 @@ export type ReviewSource = {
   bestFocusPeriod: string;
   dominantMoodLabel?: string;
   averageEnergyLevel?: number;
+  recentNotes?: string[];
 };
 
 const moodLabelMap = {
@@ -119,6 +121,15 @@ function buildMoodSignals(taskLogs: ReviewTaskLogSource[]) {
   };
 }
 
+function buildRecentNotes(tasks: ReviewTaskSource[]) {
+  const notes = tasks
+    .filter((task) => task.status === "done")
+    .map((task) => task.completionNote?.trim() ?? "")
+    .filter((note) => note.length > 0);
+
+  return notes.slice(0, 2);
+}
+
 export function buildReviewSourceFromTasks(
   tasks: ReviewTaskSource[],
   taskLogs: ReviewTaskLogSource[] = [],
@@ -133,6 +144,7 @@ export function buildReviewSourceFromTasks(
     bestFocusPeriod: buildBestFocusPeriod(tasks),
     dominantMoodLabel: moodSignals.dominantMoodLabel,
     averageEnergyLevel: moodSignals.averageEnergyLevel,
+    recentNotes: buildRecentNotes(tasks),
   };
 }
 

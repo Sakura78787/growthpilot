@@ -15,6 +15,7 @@ export const goals = sqliteTable("goals", {
   title: text("title").notNull(),
   category: text("category").notNull(),
   deadline: text("deadline").notNull(),
+  profileSnapshot: text("profile_snapshot").notNull().default("{}"),
   priority: text("priority").notNull(),
   status: text("status").notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),

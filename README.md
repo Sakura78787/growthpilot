@@ -31,8 +31,14 @@ npm run dev
 
 暂缓：
 
-- Playwright 浏览器下载
-- 端到端测试执行
+- E2E 自动化（当前阶段改为人工手测）
+
+## 环境变量
+
+复制 `.env.example` 到 `.env.local`，并按需填写：
+
+- `DASHSCOPE_API_KEY`：阿里百炼 API Key（用于轻量个性化计划）
+- `DASHSCOPE_MODEL`：默认 `qwen-plus`
 
 ## 部署到 Cloudflare
 
@@ -40,8 +46,9 @@ npm run dev
 2. 创建 D1 数据库：`wrangler d1 create growthpilot-db`
 3. 把返回的 `database_id` 填入 [wrangler.jsonc](./wrangler.jsonc)
 4. 本地应用迁移：`npm run db:migrate:local`
-5. 构建并本地预览 Worker：`npm run cf:preview`
-6. 正式部署：`npm run cf:deploy`
+5. 远程应用迁移：`npm run db:migrate:remote`
+6. 构建并本地预览 Worker：`npm run cf:preview`
+7. 正式部署：`npm run cf:deploy`
 
 ## 计划文档
 

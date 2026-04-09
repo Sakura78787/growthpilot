@@ -23,6 +23,32 @@ function normalizeCategory(value: SearchParamValue): GoalCategory {
   return goalCategories.includes(category as GoalCategory) ? (category as GoalCategory) : "job";
 }
 
+function resolvePlanBadgeFromSnapshot(value: string | null | undefined) {
+  if (!value) {
+    return {
+      source: "rules" as const,
+      reason: "当前展示的是规则模板生成的首版计划。",
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(value) as {
+      planSource?: "llm" | "rules";
+      planReason?: string;
+    };
+
+    return {
+      source: parsed.planSource ?? ("rules" as const),
+      reason: parsed.planReason ?? "当前展示的是规则模板生成的首版计划。",
+    };
+  } catch {
+    return {
+      source: "rules" as const,
+      reason: "当前展示的是规则模板生成的首版计划。",
+    };
+  }
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -45,6 +71,7 @@ export default async function DashboardPage({
       tasks: dbDetail.tasks,
     });
     const detailHref = `/goals/${view.goalId}`;
+    const badge = resolvePlanBadgeFromSnapshot(dbDetail.goal.profileSnapshot);
 
     return (
       <SiteShell
@@ -62,6 +89,9 @@ export default async function DashboardPage({
               <p className="section-chip">当前主目标</p>
               <h2 className="panel-title">{view.goalTitle}</h2>
               <p className="panel-copy">你当前选择的是“{view.goalCategoryLabel}”类型目标，系统已经优先从真实数据记录里读取你的阶段任务与推进状态。</p>
+              <p className="panel-copy">
+                生成方式：{badge.source === "llm" ? "大模型个性化" : "规则模板"}。{badge.reason}
+              </p>
             </div>
             <a href={detailHref} className="secondary-link">
               查看完整目标拆解
@@ -75,6 +105,8 @@ export default async function DashboardPage({
   const goalId = requestedGoalId ?? "goal-demo-1";
   const goalTitle = pickFirst(params.goalTitle) ?? defaultGoalTitle;
   const goalCategory = normalizeCategory(params.goalCategory);
+  const planSource = pickFirst(params.planSource) === "llm" ? "llm" : "rules";
+  const planReason = pickFirst(params.planReason) ?? "当前展示的是规则模板生成的首版计划。";
   const plan = buildGoalPlan({ title: goalTitle, category: goalCategory });
   const tasks = plan.tasks.slice(0, 3).map((task, index) => ({
     id: `${goalId}-task-${index + 1}`,
@@ -100,6 +132,7 @@ export default async function DashboardPage({
             <p className="section-chip">当前主目标</p>
             <h2 className="panel-title">{goalTitle}</h2>
             <p className="panel-copy">你当前选择的是“{goalCategory === "discipline" ? "自律" : goalCategory === "study" ? "学习" : "求职"}”类型目标，系统已先用回退数据帮你拆出首批里程碑和任务。</p>
+            <p className="panel-copy">生成方式：{planSource === "llm" ? "大模型个性化" : "规则模板"}。{planReason}</p>
           </div>
           <a href={detailHref} className="secondary-link">
             查看完整目标拆解

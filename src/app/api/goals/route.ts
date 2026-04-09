@@ -1,6 +1,7 @@
-import { ZodError } from "zod";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
+import { generatePersonalizedGoalPlan } from "@/lib/ai/goal-planner";
 import { trackEvent } from "@/lib/analytics/events";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
@@ -11,27 +12,53 @@ import { goalRequestSchema } from "@/lib/validation/goals";
 export async function POST(request: NextRequest) {
   try {
     const payload = goalRequestSchema.parse(await request.json());
+    const personalized = await generatePersonalizedGoalPlan(payload);
+
+    const profileSnapshot = {
+      currentLevel: payload.currentLevel,
+      dailyMinutes: payload.dailyMinutes,
+      mainBlocker: payload.mainBlocker,
+      planSource: personalized.planSource,
+      planReason: personalized.planReason,
+    } as const;
+
     const env = await getOptionalCloudflareEnv();
     const db = env?.DB ? getDb(env) : null;
+
     const graph = db
-      ? await runWithOptionalDbFallback(async () => {
-          const created = await createGoalWithPlan(db, payload);
+      ? await runWithOptionalDbFallback(
+          async () => {
+            const created = await createGoalWithPlan(db, payload, {
+              plan: personalized.plan,
+              profileSnapshot,
+            });
 
-          await trackEvent(db, {
-            userId: created.goal.userId,
-            eventName: "goal.created",
-            eventPayload: {
-              goalId: created.goal.id,
-              category: created.goal.category,
-            },
-          });
+            await trackEvent(db, {
+              userId: created.goal.userId,
+              eventName: "goal.created",
+              eventPayload: {
+                goalId: created.goal.id,
+                category: created.goal.category,
+                planSource: personalized.planSource,
+              },
+            });
 
-          return created;
-        }, buildGoalGraph(payload))
-      : buildGoalGraph(payload);
+            return created;
+          },
+          buildGoalGraph(payload, {
+            plan: personalized.plan,
+            profileSnapshot,
+          }),
+        )
+      : buildGoalGraph(payload, {
+          plan: personalized.plan,
+          profileSnapshot,
+        });
 
     return NextResponse.json({
       ok: true,
+      planSource: personalized.planSource,
+      planReason: personalized.planReason,
       goal: {
         ...graph.goal,
         milestones: graph.milestones,

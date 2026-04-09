@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     bestFocusPeriod?: string;
     dominantMoodLabel?: string;
     averageEnergyLevel?: number;
+    recentNotes?: string[];
   };
 
   const env = await getOptionalCloudflareEnv();
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
         bestFocusPeriod: payload.bestFocusPeriod ?? source.bestFocusPeriod,
         dominantMoodLabel: payload.dominantMoodLabel ?? source.dominantMoodLabel,
         averageEnergyLevel: payload.averageEnergyLevel ?? source.averageEnergyLevel,
+        recentNotes: payload.recentNotes ?? source.recentNotes,
       };
       const review = await generateWeeklyReview(merged);
 
