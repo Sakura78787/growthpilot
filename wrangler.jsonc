@@ -1,0 +1,13 @@
+﻿{
+  "name": "growthpilot",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-04-09",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "growthpilot-db",
+      "database_id": "REPLACE_AFTER_CREATION"
+    }
+  ]
+}

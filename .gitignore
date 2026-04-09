@@ -1,0 +1,16 @@
+/node_modules
+/.next
+/out
+/build
+/coverage
+/test-results
+/.npm-cache
+/.superpowers
+/playwright-report
+*.log
+.env*
+!.env.example
+.DS_Store
+*.pem
+*.tsbuildinfo
+next-env.d.ts
