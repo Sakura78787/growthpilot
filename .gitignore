@@ -7,6 +7,7 @@
 /.npm-cache
 /.wrangler
 /.superpowers
+/.open-next
 /playwright-report
 *.log
 .env*
