@@ -1,3 +1,4 @@
+import { extractJsonObject } from "@/lib/ai/extract-json-object";
 import type { GoalPlanSeed } from "@/lib/mock/seed-data";
 import { buildGoalPlan } from "@/lib/mock/seed-data";
 import type { GoalRequest } from "@/lib/validation/goals";
@@ -8,7 +9,7 @@ export type PersonalizedGoalPlan = {
   planReason: string;
 };
 
-const defaultModel = "qwen-plus";
+const defaultModel = "tongyi-xiaomi-analysis-flash";
 
 function normalizeTitle(value: unknown, fallback: string) {
   if (typeof value !== "string") {
@@ -58,18 +59,6 @@ function normalizeGoalPlan(input: unknown, fallback: GoalPlanSeed): GoalPlanSeed
     milestones,
     tasks,
   };
-}
-
-function extractJsonObject(raw: string) {
-  const fenced = raw.match(/```json\s*([\s\S]*?)```/i);
-  const source = fenced?.[1] ?? raw;
-  const firstBrace = source.indexOf("{");
-  const lastBrace = source.lastIndexOf("}");
-  if (firstBrace < 0 || lastBrace <= firstBrace) {
-    return null;
-  }
-
-  return source.slice(firstBrace, lastBrace + 1);
 }
 
 function buildFallbackReason(input: GoalRequest) {
@@ -126,11 +115,15 @@ export async function generatePersonalizedGoalPlan(input: GoalRequest): Promise<
           { role: "system", content: "你输出必须是合法 JSON。" },
           { role: "user", content: prompt },
         ],
-        temperature: 0.5,
+        temperature: 0,
+        top_k: 1,
+        result_format: "message",
       }),
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("DashScope API Error (goal-planner):", response.status, errorBody);
       return fallback;
     }
 
@@ -164,7 +157,8 @@ export async function generatePersonalizedGoalPlan(input: GoalRequest): Promise<
       planSource: "llm",
       planReason: normalizeTitle(parsed.planReason, "模型已根据你的输入做了轻量个性化改写。"),
     };
-  } catch {
+  } catch (error) {
+    console.error("Fetch Exception (goal-planner):", error);
     return fallback;
   }
 }

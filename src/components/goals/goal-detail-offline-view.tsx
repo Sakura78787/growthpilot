@@ -1,53 +1,38 @@
-import {
-  GoalDetailOfflineView,
-  normalizeGoalDetailCategory,
-} from "@/components/goals/goal-detail-offline-view";
+"use client";
+
 import Link from "next/link";
+import { useMemo } from "react";
 
 import { GoalTimeline } from "@/components/goals/goal-timeline";
 import { SiteShell } from "@/components/layout/site-shell";
-import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
-import { getDb } from "@/lib/db/client";
-import { buildFallbackGoalDetail, buildGoalDetailViewModel, getGoalDetail } from "@/lib/db/queries/goals";
-import { buildGoalPlan } from "@/lib/mock/seed-data";
+import { readOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
+import { buildFallbackGoalDetail, buildGoalDetailViewModel } from "@/lib/db/queries/goals";
+import { buildGoalPlan, goalCategories, type GoalCategory } from "@/lib/mock/seed-data";
 
-const defaultGoalTitle = "做出两个能投产品经理暑期实习的项目";
+type Props = {
+  goalId: string;
+  fallbackTitle: string;
+  fallbackCategory: GoalCategory;
+};
 
-type SearchParamValue = string | string[] | undefined;
-
-function pickFirst(value: SearchParamValue) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-export default async function GoalDetailPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ goalId: string }>;
-  searchParams: Promise<Record<string, SearchParamValue>>;
-}) {
-  const [{ goalId }, query] = await Promise.all([params, searchParams]);
-  const env = await getOptionalCloudflareEnv();
-  const db = env?.DB ? getDb(env) : null;
-  const detail = db
-    ? await runWithOptionalDbFallback(() => getGoalDetail(db, goalId), null)
-    : null;
-
-  const fallbackGoalTitle = pickFirst(query.title) ?? defaultGoalTitle;
-  const fallbackGoalCategory = normalizeGoalDetailCategory(pickFirst(query.category));
-
-  if (!detail?.goal) {
-    return (
-      <GoalDetailOfflineView
-        goalId={goalId}
-        fallbackTitle={fallbackGoalTitle}
-        fallbackCategory={fallbackGoalCategory}
-      />
+export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory }: Props) {
+  const { detailView, hasOfflinePlan } = useMemo(() => {
+    const stored = readOfflineGoalPlan(goalId);
+    const plan = stored?.planSeed ?? buildGoalPlan({ title: fallbackTitle, category: fallbackCategory });
+    const view = buildGoalDetailViewModel(
+      buildFallbackGoalDetail({
+        goalId,
+        title: fallbackTitle,
+        category: fallbackCategory,
+        plan,
+      }),
     );
-  }
+    return { detailView: view, hasOfflinePlan: Boolean(stored) };
+  }, [goalId, fallbackTitle, fallbackCategory]);
 
-  const detailView = buildGoalDetailViewModel(detail);
-  const description = "这里优先展示已经写进数据库的阶段里程碑和任务状态，让目标不再只是一个标题。";
+  const description = hasOfflinePlan
+    ? "本次打开优先使用浏览器里缓存的生成结果；连接数据库后将自动切换为持久化记录。"
+    : "当前还没有读到数据库记录，所以先用一版中文拆解把目标节奏、阶段和动作串起来。";
 
   return (
     <SiteShell title="目标详情" description={description}>
@@ -56,7 +41,8 @@ export default async function GoalDetailPage({
           <p className="section-chip">目标卡片</p>
           <h2 className="panel-title">{detailView.goalTitle}</h2>
           <p className="panel-copy">
-            这是一个“{detailView.categoryLabel}”方向目标，目前 {detailView.progressLabel}。别急着一次性做完，先把下一步压缩到身体愿意配合开始的尺度。
+            这是一个“{detailView.categoryLabel}”方向目标，目前 {detailView.progressLabel}
+            。别急着一次性做完，先把下一步压缩到身体愿意配合开始的尺度。
           </p>
 
           <div className="goal-stats-grid">
@@ -93,4 +79,8 @@ export default async function GoalDetailPage({
       />
     </SiteShell>
   );
+}
+
+export function normalizeGoalDetailCategory(value: string | undefined): GoalCategory {
+  return goalCategories.includes(value as GoalCategory) ? (value as GoalCategory) : "job";
 }

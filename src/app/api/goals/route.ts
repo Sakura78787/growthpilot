@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       ok: true,
       planSource: personalized.planSource,
       planReason: personalized.planReason,
+      planSeed: personalized.plan,
       goal: {
         ...graph.goal,
         milestones: graph.milestones,

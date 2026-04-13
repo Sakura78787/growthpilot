@@ -1,12 +1,10 @@
-﻿import Link from "next/link";
-
+﻿import { DashboardOfflineView, normalizeDashboardCategory } from "@/components/dashboard/dashboard-offline-view";
 import { InsightPanel } from "@/components/dashboard/insight-panel";
 import { TodayPanel } from "@/components/dashboard/today-panel";
 import { SiteShell } from "@/components/layout/site-shell";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
 import { buildDashboardViewModel, getGoalDetail, getLatestGoalDetail } from "@/lib/db/queries/goals";
-import { buildGoalPlan, goalCategories, type GoalCategory } from "@/lib/mock/seed-data";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +14,6 @@ type SearchParamValue = string | string[] | undefined;
 
 function pickFirst(value: SearchParamValue) {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function normalizeCategory(value: SearchParamValue): GoalCategory {
-  const category = pickFirst(value);
-  return goalCategories.includes(category as GoalCategory) ? (category as GoalCategory) : "job";
 }
 
 function resolvePlanBadgeFromSnapshot(value: string | null | undefined) {
@@ -104,41 +97,17 @@ export default async function DashboardPage({
 
   const goalId = requestedGoalId ?? "goal-demo-1";
   const goalTitle = pickFirst(params.goalTitle) ?? defaultGoalTitle;
-  const goalCategory = normalizeCategory(params.goalCategory);
+  const goalCategory = normalizeDashboardCategory(pickFirst(params.goalCategory));
   const planSource = pickFirst(params.planSource) === "llm" ? "llm" : "rules";
   const planReason = pickFirst(params.planReason) ?? "当前展示的是规则模板生成的首版计划。";
-  const plan = buildGoalPlan({ title: goalTitle, category: goalCategory });
-  const tasks = plan.tasks.slice(0, 3).map((task, index) => ({
-    id: `${goalId}-task-${index + 1}`,
-    title: task.title,
-    status: index === 0 ? "doing" : "todo",
-  })) as Array<{ id: string; title: string; status: "todo" | "doing" | "done" | "skipped" }>;
-
-  const detailHref = `/goals/${goalId}?title=${encodeURIComponent(goalTitle)}&category=${goalCategory}`;
 
   return (
-    <SiteShell
-      title="成长驾驶舱"
-      description="把目标拆成今天就能开始的动作，同时保留一点轻盈感，让推进这件事没那么累。"
-    >
-      <div className="dashboard-grid">
-        <TodayPanel streak={12} tasks={tasks} />
-        <InsightPanel />
-      </div>
-
-      <section className="shell-panel shell-panel-soft">
-        <div className="detail-banner">
-          <div>
-            <p className="section-chip">当前主目标</p>
-            <h2 className="panel-title">{goalTitle}</h2>
-            <p className="panel-copy">你当前选择的是“{goalCategory === "discipline" ? "自律" : goalCategory === "study" ? "学习" : "求职"}”类型目标，系统已先用回退数据帮你拆出首批里程碑和任务。</p>
-            <p className="panel-copy">生成方式：{planSource === "llm" ? "大模型个性化" : "规则模板"}。{planReason}</p>
-          </div>
-          <a href={detailHref} className="secondary-link">
-            查看完整目标拆解
-          </a>
-        </div>
-      </section>
-    </SiteShell>
+    <DashboardOfflineView
+      goalId={goalId}
+      goalTitle={goalTitle}
+      goalCategory={goalCategory}
+      planSourceFromUrl={planSource}
+      planReasonFromUrl={planReason}
+    />
   );
 }

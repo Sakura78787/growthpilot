@@ -2,10 +2,14 @@
 
 import { useState, useTransition } from "react";
 
+import type { GoalPlanSeed } from "@/lib/mock/seed-data";
+import { saveOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
+
 type GoalApiResponse = {
   ok: boolean;
   planSource?: "llm" | "rules";
   planReason?: string;
+  planSeed?: GoalPlanSeed;
   goal?: {
     id: string;
     title: string;
@@ -42,6 +46,14 @@ export function GoalForm() {
       if (!response.ok || !data.goal) {
         setFeedback(data.errors?.[0] ?? "生成计划时出现了点小问题，请稍后再试。");
         return;
+      }
+
+      if (data.planSeed) {
+        saveOfflineGoalPlan(data.goal.id, {
+          planSeed: data.planSeed,
+          planReason: data.planReason ?? "已生成计划。",
+          planSource: data.planSource ?? "rules",
+        });
       }
 
       const nextUrl = new URL("/dashboard", window.location.origin);
