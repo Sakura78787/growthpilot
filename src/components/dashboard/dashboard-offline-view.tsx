@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 import { InsightPanel } from "@/components/dashboard/insight-panel";
 import { TodayPanel } from "@/components/dashboard/today-panel";
 import { SiteShell } from "@/components/layout/site-shell";
-import { readOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
+import { readOfflineGoalPlan, type OfflineGoalPlanPayload } from "@/lib/client/offline-goal-plan";
 import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
 type Props = {
@@ -23,7 +23,12 @@ export function DashboardOfflineView({
   planSourceFromUrl,
   planReasonFromUrl,
 }: Props) {
-  const stored = useMemo(() => readOfflineGoalPlan(goalId), [goalId]);
+  // sessionStorage is only available after mount; reading it during render breaks SSR hydration.
+  const [stored, setStored] = useState<OfflineGoalPlanPayload | null>(null);
+  useEffect(() => {
+    setStored(readOfflineGoalPlan(goalId));
+  }, [goalId]);
+
   const plan = stored?.planSeed ?? buildGoalPlan({ title: goalTitle, category: goalCategory });
   const planSource = stored?.planSource ?? planSourceFromUrl;
   const planReason = stored?.planReason ?? planReasonFromUrl;

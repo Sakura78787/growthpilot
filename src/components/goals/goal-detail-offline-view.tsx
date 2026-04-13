@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { GoalTimeline } from "@/components/goals/goal-timeline";
 import { SiteShell } from "@/components/layout/site-shell";
-import { readOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
+import { readOfflineGoalPlan, type OfflineGoalPlanPayload } from "@/lib/client/offline-goal-plan";
 import { buildFallbackGoalDetail, buildGoalDetailViewModel } from "@/lib/db/queries/goals";
 import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
@@ -16,10 +16,14 @@ type Props = {
 };
 
 export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory }: Props) {
-  const { detailView, hasOfflinePlan } = useMemo(() => {
-    const stored = readOfflineGoalPlan(goalId);
+  const [stored, setStored] = useState<OfflineGoalPlanPayload | null>(null);
+  useEffect(() => {
+    setStored(readOfflineGoalPlan(goalId));
+  }, [goalId]);
+
+  const detailView = useMemo(() => {
     const plan = stored?.planSeed ?? buildGoalPlan({ title: fallbackTitle, category: fallbackCategory });
-    const view = buildGoalDetailViewModel(
+    return buildGoalDetailViewModel(
       buildFallbackGoalDetail({
         goalId,
         title: fallbackTitle,
@@ -27,10 +31,9 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
         plan,
       }),
     );
-    return { detailView: view, hasOfflinePlan: Boolean(stored) };
-  }, [goalId, fallbackTitle, fallbackCategory]);
+  }, [goalId, fallbackTitle, fallbackCategory, stored]);
 
-  const description = hasOfflinePlan
+  const description = stored
     ? "本次打开优先使用浏览器里缓存的生成结果；连接数据库后将自动切换为持久化记录。"
     : "当前还没有读到数据库记录，所以先用一版中文拆解把目标节奏、阶段和动作串起来。";
 
