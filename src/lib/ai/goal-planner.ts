@@ -37,15 +37,20 @@ function normalizeGoalPlan(input: unknown, fallback: GoalPlanSeed): GoalPlanSeed
 
   const candidate = input as {
     milestones?: Array<{ title?: unknown; targetDateLabel?: unknown }>;
+    milestone?: Array<{ title?: unknown; targetDateLabel?: unknown }>;
     tasks?: Array<{ title?: unknown; bucket?: unknown; suggestedDuration?: unknown }>;
+    task?: Array<{ title?: unknown; bucket?: unknown; suggestedDuration?: unknown }>;
   };
 
-  const milestones = (candidate.milestones ?? []).slice(0, 3).map((item, index) => ({
+  const milestoneSource = candidate.milestones ?? candidate.milestone;
+  const taskSource = candidate.tasks ?? candidate.task;
+
+  const milestones = (Array.isArray(milestoneSource) ? milestoneSource : []).slice(0, 3).map((item, index) => ({
     title: normalizeTitle(item?.title, fallback.milestones[index]?.title ?? `阶段 ${index + 1}`),
     targetDateLabel: normalizeTitle(item?.targetDateLabel, fallback.milestones[index]?.targetDateLabel ?? `第 ${index + 1} 周`),
   }));
 
-  const tasks = (candidate.tasks ?? []).slice(0, 3).map((item, index) => ({
+  const tasks = (Array.isArray(taskSource) ? taskSource : []).slice(0, 3).map((item, index) => ({
     title: normalizeTitle(item?.title, fallback.tasks[index]?.title ?? `关键动作 ${index + 1}`),
     bucket: normalizeTitle(item?.bucket, fallback.tasks[index]?.bucket ?? "action"),
     suggestedDuration: normalizeDuration(item?.suggestedDuration, fallback.tasks[index]?.suggestedDuration ?? 20),
@@ -91,9 +96,11 @@ export async function generatePersonalizedGoalPlan(input: GoalRequest): Promise<
   }
 
   const prompt = [
-    "你是中文产品成长教练，请基于输入生成 3 个阶段里程碑和 3 个关键动作。",
-    "要求：内容具体、可开始、适合中国大陆大学生，且动作时长控制在 15-120 分钟。",
-    "只返回 JSON，不要解释：",
+    "你是中文产品成长教练，请基于输入生成恰好 3 个阶段里程碑和恰好 3 个关键动作（不要多也不要少）。",
+    "要求：内容具体、可开始、适合中国大陆大学生，且每个动作的 suggestedDuration 为 15-120 之间的整数（分钟）。",
+    "只输出一个 JSON 对象：不要使用 markdown、不要代码围栏、不要前后解释或多余文字。",
+    "字段名必须为 planReason、milestones、tasks；milestones 与 tasks 均为长度 3 的数组。",
+    "示例结构（请替换为你的内容）：",
     '{ "planReason": "一句解释", "milestones":[{"title":"...","targetDateLabel":"..."}], "tasks":[{"title":"...","bucket":"...","suggestedDuration":20}] }',
     `目标：${input.title}`,
     `类型：${input.category}`,
@@ -112,7 +119,7 @@ export async function generatePersonalizedGoalPlan(input: GoalRequest): Promise<
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: "你输出必须是合法 JSON。" },
+          { role: "system", content: "你只输出合法 JSON 对象一行或多行均可，禁止 markdown 与任何非 JSON 内容。" },
           { role: "user", content: prompt },
         ],
         temperature: 0,
@@ -140,22 +147,12 @@ export async function generatePersonalizedGoalPlan(input: GoalRequest): Promise<
       return fallback;
     }
 
-    const parsed = JSON.parse(jsonSource) as {
-      planReason?: unknown;
-      milestones?: unknown;
-      tasks?: unknown;
-    };
+    const parsed = JSON.parse(jsonSource) as Record<string, unknown>;
 
     return {
-      plan: normalizeGoalPlan(
-        {
-          milestones: parsed.milestones,
-          tasks: parsed.tasks,
-        },
-        fallback.plan,
-      ),
+      plan: normalizeGoalPlan(parsed, fallback.plan),
       planSource: "llm",
-      planReason: normalizeTitle(parsed.planReason, "模型已根据你的输入做了轻量个性化改写。"),
+      planReason: normalizeTitle(parsed["planReason"], "模型已根据你的输入做了轻量个性化改写。"),
     };
   } catch (error) {
     console.error("Fetch Exception (goal-planner):", error);
