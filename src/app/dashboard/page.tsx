@@ -1,4 +1,5 @@
-﻿import { DashboardOfflineView, normalizeDashboardCategory } from "@/components/dashboard/dashboard-offline-view";
+﻿import { DashboardOfflineView } from "@/components/dashboard/dashboard-offline-view";
+import { normalizeGoalCategory } from "@/lib/goal-category";
 import { InsightPanel } from "@/components/dashboard/insight-panel";
 import { TodayPanel } from "@/components/dashboard/today-panel";
 import { SiteShell } from "@/components/layout/site-shell";
@@ -97,7 +98,7 @@ export default async function DashboardPage({
 
   const goalId = requestedGoalId ?? "goal-demo-1";
   const goalTitle = pickFirst(params.goalTitle) ?? defaultGoalTitle;
-  const goalCategory = normalizeDashboardCategory(pickFirst(params.goalCategory));
+  const goalCategory = normalizeGoalCategory(pickFirst(params.goalCategory));
   const planSource = pickFirst(params.planSource) === "llm" ? "llm" : "rules";
   const planReason = pickFirst(params.planReason) ?? "当前展示的是规则模板生成的首版计划。";
 

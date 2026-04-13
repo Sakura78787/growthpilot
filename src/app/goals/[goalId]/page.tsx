@@ -1,7 +1,4 @@
-import {
-  GoalDetailOfflineView,
-  normalizeGoalDetailCategory,
-} from "@/components/goals/goal-detail-offline-view";
+import { GoalDetailOfflineView } from "@/components/goals/goal-detail-offline-view";
 import Link from "next/link";
 
 import { GoalTimeline } from "@/components/goals/goal-timeline";
@@ -9,6 +6,7 @@ import { SiteShell } from "@/components/layout/site-shell";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
 import { buildFallbackGoalDetail, buildGoalDetailViewModel, getGoalDetail } from "@/lib/db/queries/goals";
+import { normalizeGoalCategory } from "@/lib/goal-category";
 import { buildGoalPlan } from "@/lib/mock/seed-data";
 
 const defaultGoalTitle = "做出两个能投产品经理暑期实习的项目";
@@ -34,7 +32,7 @@ export default async function GoalDetailPage({
     : null;
 
   const fallbackGoalTitle = pickFirst(query.title) ?? defaultGoalTitle;
-  const fallbackGoalCategory = normalizeGoalDetailCategory(pickFirst(query.category));
+  const fallbackGoalCategory = normalizeGoalCategory(pickFirst(query.category));
 
   if (!detail?.goal) {
     return (

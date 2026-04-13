@@ -7,7 +7,7 @@ import { GoalTimeline } from "@/components/goals/goal-timeline";
 import { SiteShell } from "@/components/layout/site-shell";
 import { readOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
 import { buildFallbackGoalDetail, buildGoalDetailViewModel } from "@/lib/db/queries/goals";
-import { buildGoalPlan, goalCategories, type GoalCategory } from "@/lib/mock/seed-data";
+import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
 type Props = {
   goalId: string;
@@ -79,8 +79,4 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
       />
     </SiteShell>
   );
-}
-
-export function normalizeGoalDetailCategory(value: string | undefined): GoalCategory {
-  return goalCategories.includes(value as GoalCategory) ? (value as GoalCategory) : "job";
 }

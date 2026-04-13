@@ -6,7 +6,7 @@ import { InsightPanel } from "@/components/dashboard/insight-panel";
 import { TodayPanel } from "@/components/dashboard/today-panel";
 import { SiteShell } from "@/components/layout/site-shell";
 import { readOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
-import { buildGoalPlan, goalCategories, type GoalCategory } from "@/lib/mock/seed-data";
+import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
 type Props = {
   goalId: string;
@@ -70,8 +70,4 @@ export function DashboardOfflineView({
       </section>
     </SiteShell>
   );
-}
-
-export function normalizeDashboardCategory(value: string | undefined): GoalCategory {
-  return goalCategories.includes(value as GoalCategory) ? (value as GoalCategory) : "job";
 }
