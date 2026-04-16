@@ -11,7 +11,7 @@ describe("ProfileSummary", () => {
         badges={["求职推进型", "连续行动中", "会复盘"]}
         streakLabel="连续行动 3 天"
         preferredWindowLabel="20:00 - 22:00"
-        recentHighlight="最近已经完成 2 个关键动作，说明你已经开始把大目标压缩成可启动的小步。"
+        recentHighlight="已完成 2 个关键动作，1 个正在推进。"
         nextAdvice="下周继续把任务压到 20 分钟内开始。"
         recentMoments={["最近完成：优化项目首页叙事", "当前推进：补一张流程图"]}
       />,
@@ -21,7 +21,6 @@ describe("ProfileSummary", () => {
     expect(screen.getByText("求职推进型")).toBeInTheDocument();
     expect(screen.getByText("连续行动 3 天")).toBeInTheDocument();
     expect(screen.getByText("20:00 - 22:00")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "回到成长驾驶舱" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getByRole("link", { name: "继续今日行动" })).toHaveAttribute("href", "/focus");
+    expect(screen.getByRole("link", { name: "回到驾驶舱" })).toHaveAttribute("href", "/dashboard");
   });
 });

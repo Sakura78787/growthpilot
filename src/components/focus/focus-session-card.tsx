@@ -6,9 +6,9 @@ import { useState } from "react";
 import type { TaskUpdateInput } from "@/lib/validation/tasks";
 
 const starterActions = [
-  "先把目标拆成一个 20 分钟动作",
-  "把手机放到看不见的地方",
-  "结束后立刻记录一句今天的感受",
+  "将目标拆为 20 分钟内的起步动作",
+  "减少干扰，选择一个低阻力场景",
+  "完成后记录一句今天的关键收获",
 ];
 
 type FocusSessionCardProps = {
@@ -61,7 +61,7 @@ export function FocusSessionCard({
       });
       setPhase("active");
     } catch {
-      setError("这次开始记录失败了，稍后再试一下。");
+      setError("记录开始失败，请稍后重试。");
     } finally {
       setSubmitting(false);
     }
@@ -81,7 +81,7 @@ export function FocusSessionCard({
       });
       setPhase("done");
     } catch {
-      setError("这次完成记录没有成功，先别急，等会再试一次。");
+      setError("记录完成失败，请稍后重试。");
     } finally {
       setSubmitting(false);
     }

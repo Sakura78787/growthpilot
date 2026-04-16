@@ -37,10 +37,84 @@ a {
   text-decoration: none;
 }
 
+/* 首页：底部渐变微弱色相呼吸（见 .home-hero-root::before） */
+.home-hero-root {
+  position: relative;
+  min-height: 100vh;
+  z-index: 0;
+}
+
+.home-hero-root::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60vh;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(228, 237, 245, 0.5) 100%);
+  animation: homeHeroHueBreath 14s ease-in-out infinite alternate;
+}
+
+@keyframes homeHeroHueBreath {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+
+  100% {
+    filter: hue-rotate(15deg);
+  }
+}
+
 .hero-shell {
+  position: relative;
+  z-index: 1;
   max-width: 1024px;
   margin: 0 auto;
   padding: 96px 24px 120px;
+}
+
+@keyframes heroEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-entrance {
+  opacity: 0;
+  animation: heroEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-entrance-delay-0 {
+  animation-delay: 0ms;
+}
+
+.hero-entrance-delay-1 {
+  animation-delay: 100ms;
+}
+
+.hero-entrance-delay-2 {
+  animation-delay: 200ms;
+}
+
+.hero-entrance-delay-3 {
+  animation-delay: 300ms;
+}
+
+.hero-title {
+  word-break: keep-all;
+}
+
+.hero-title-accent {
+  color: #5a6d5c;
+  font-weight: 600;
 }
 
 .hero-badge {
@@ -60,7 +134,7 @@ a {
   font-size: 15px;
 }
 
-.hero-shell h1 {
+.hero-shell h1.hero-title {
   max-width: 700px;
   margin: 0;
   font-size: clamp(3rem, 6vw, 5rem);
@@ -683,5 +757,17 @@ a {
 
   .goal-timeline-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-entrance,
+  .home-hero-root::before {
+    animation: none !important;
+  }
+
+  .hero-entrance {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

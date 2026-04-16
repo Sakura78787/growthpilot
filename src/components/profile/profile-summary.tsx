@@ -34,11 +34,8 @@ export function ProfileSummary({
         <p className="panel-copy">{recentHighlight}</p>
 
         <div className="profile-action-row">
-          <Link href="/dashboard" className="secondary-link">
-            回到成长驾驶舱
-          </Link>
-          <Link href="/focus" className="primary-button">
-            继续今日行动
+          <Link href="/dashboard" className="primary-button">
+            回到驾驶舱
           </Link>
         </div>
       </article>

@@ -96,10 +96,10 @@ function buildRecentHighlight(tasksInput: ProfileTaskRecord[], preferredWindowLa
   const doingCount = tasksInput.filter((task) => task.status === "doing").length;
 
   if (doneCount > 0) {
-    return `最近已经完成 ${doneCount} 个关键动作，目前还有 ${doingCount} 个动作在推进，说明你已经开始把大目标压缩成可启动的小步。`;
+    return `已完成 ${doneCount} 个关键动作，${doingCount} 个正在推进。`;
   }
 
-  return `你最适合推进的时段是 ${preferredWindowLabel}，先在这个时间窗里保住一个 20 分钟动作就足够。`;
+  return `建议在 ${preferredWindowLabel} 安排一个核心动作。`;
 }
 
 function buildRecentMoments(tasksInput: ProfileTaskRecord[], reviewsInput: ProfileReviewRecord[]) {

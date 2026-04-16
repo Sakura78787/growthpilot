@@ -45,7 +45,7 @@ export default async function GoalDetailPage({
   }
 
   const detailView = buildGoalDetailViewModel(detail);
-  const description = "这里优先展示已经写进数据库的阶段里程碑和任务状态，让目标不再只是一个标题。";
+  const description = "查看目标的阶段拆解与任务进度。";
   const progressPct =
     detailView.totalTaskCount > 0
       ? Math.round((detailView.completedTaskCount / detailView.totalTaskCount) * 100)
@@ -100,8 +100,8 @@ export default async function GoalDetailPage({
 
       <GoalTimeline
         progressLabel={detailView.progressLabel}
-        nextActionTitle={detailView.nextAction?.title ?? "先选一个 20 分钟以内的动作启动起来"}
-        nextActionMeta={detailView.nextAction?.meta ?? "先开始，再决定要不要继续加码"}
+        nextActionTitle={detailView.nextAction?.title ?? "选择一个 20 分钟内的动作开始"}
+        nextActionMeta={detailView.nextAction?.meta ?? "先开始第一步"}
         milestones={detailView.milestones}
         looseTasks={detailView.looseTasks}
       />

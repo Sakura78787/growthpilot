@@ -33,6 +33,7 @@ describe("Dashboard panels", () => {
             { id: "task-1", title: "修改一版简历", status: "todo" },
             { id: "task-2", title: "拆解一个作品集页面", status: "doing" },
           ]}
+          preferredWindow="20:00 - 22:00"
         />
         <InsightPanel goalDetailHref="/goals/demo" preferredWindow="20:00 - 22:00" advice="下周优先稳住启动节奏。" />
       </>,
@@ -40,6 +41,7 @@ describe("Dashboard panels", () => {
 
     expect(screen.getByText("连续行动 12 天")).toBeInTheDocument();
     expect(screen.getByText("今天先完成 2 个关键动作")).toBeInTheDocument();
+    expect(screen.getAllByText("适合在 20:00 - 22:00 推进").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "开始今天的关键动作" })).toHaveAttribute("href", "/focus");
     expect(screen.getByText("本周推进建议")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "查看目标详情" })).toHaveAttribute("href", "/goals/demo");

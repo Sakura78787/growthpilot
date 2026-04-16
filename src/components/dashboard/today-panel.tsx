@@ -3,9 +3,12 @@ import Link from "next/link";
 export function TodayPanel({
   streak,
   tasks,
+  preferredWindow,
 }: {
   streak: number;
   tasks: Array<{ id: string; title: string; status: "todo" | "doing" | "done" | "skipped" }>;
+  /** 有数据时展示偏好时段；无则通用文案 */
+  preferredWindow?: string | null;
 }) {
   const statusLabel = {
     todo: "待开始",
@@ -15,6 +18,10 @@ export function TodayPanel({
   } as const;
 
   const n = tasks.length;
+  const windowLabel = preferredWindow?.trim();
+  const taskMeta = windowLabel
+    ? `适合在 ${windowLabel} 推进`
+    : "按自身节奏推进";
 
   return (
     <section className="shell-panel shell-panel-strong">
@@ -29,7 +36,7 @@ export function TodayPanel({
           <li key={task.id} className="task-item">
             <div>
               <p className="task-title">{task.title}</p>
-              <p className="task-meta">适合放在今晚 20:00 - 22:00 之间推进</p>
+              <p className="task-meta">{taskMeta}</p>
             </div>
             <span className="task-status">{statusLabel[task.status]}</span>
           </li>

@@ -99,8 +99,8 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
 
       <GoalTimeline
         progressLabel={detailView.progressLabel}
-        nextActionTitle={detailView.nextAction?.title ?? "先选一个 20 分钟以内的动作启动起来"}
-        nextActionMeta={detailView.nextAction?.meta ?? "先开始，再决定要不要继续加码"}
+        nextActionTitle={detailView.nextAction?.title ?? "选择一个 20 分钟内的动作开始"}
+        nextActionMeta={detailView.nextAction?.meta ?? "先开始第一步"}
         milestones={detailView.milestones}
         looseTasks={detailView.looseTasks}
       />

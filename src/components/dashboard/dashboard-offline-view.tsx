@@ -10,6 +10,7 @@ import {
   readOfflineGoalPlan,
   type OfflineGoalPlanPayload,
 } from "@/lib/client/offline-goal-plan";
+import { goalCategoryLabels } from "@/lib/db/queries/goals";
 import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
 type Props = {
@@ -41,8 +42,7 @@ export function DashboardOfflineView({ goalId, goalTitle, goalCategory }: Props)
   }));
 
   const streak = Math.max(1, tasks.filter((task) => task.status !== "todo").length);
-  const categoryLabel =
-    goalCategory === "discipline" ? "自律" : goalCategory === "study" ? "学习" : "求职";
+  const categoryLabel = goalCategoryLabels[goalCategory];
   const detailHref = `/goals/${goalId}?title=${encodeURIComponent(goalTitle)}&category=${goalCategory}`;
 
   const planCopy = stored

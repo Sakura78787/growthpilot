@@ -18,7 +18,7 @@ const navItems = [
 
 export function SiteShell({
   title,
-  description = "把目标拆成今天就能开始的动作，让每一步都更轻、更稳。",
+  description = "将目标拆解为可执行的具体动作。",
   badge = "GrowthPilot",
   heroChip,
   children,

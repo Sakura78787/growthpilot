@@ -35,7 +35,7 @@ describe("buildProfileViewFromRecords", () => {
     expect(result.streakLabel).toBe("连续行动 3 天");
     expect(result.preferredWindowLabel).toBe("20:00 - 22:00");
     expect(result.nextAdvice).toBe("下周继续把任务压到 20 分钟内开始。");
-    expect(result.recentHighlight).toContain("最近已经完成 2 个关键动作");
+    expect(result.recentHighlight).toBe("已完成 2 个关键动作，1 个正在推进。");
     expect(result.recentMoments[0]).toContain("优化项目首页叙事");
   });
 });

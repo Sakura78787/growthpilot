@@ -46,7 +46,7 @@ export function GoalForm() {
       const data = (await response.json()) as GoalApiResponse;
 
       if (!response.ok || !data.goal) {
-        setFeedback(data.errors?.[0] ?? "生成计划时出现了点小问题，请稍后再试。");
+        setFeedback(data.errors?.[0] ?? "计划生成失败，请稍后重试。");
         return;
       }
 
@@ -63,11 +63,9 @@ export function GoalForm() {
       nextUrl.searchParams.set("goalId", data.goal.id);
       nextUrl.searchParams.set("goalTitle", data.goal.title);
       nextUrl.searchParams.set("goalCategory", data.goal.category);
-      nextUrl.searchParams.set("planSource", data.planSource ?? "rules");
-      nextUrl.searchParams.set("planReason", data.planReason ?? "已按规则模板生成");
       (router.push as (href: string) => void)(nextUrl.toString());
     } catch {
-      setFeedback("当前网络有点慢，再试一次就好。");
+      setFeedback("网络请求失败，请重试。");
     }
   }
 

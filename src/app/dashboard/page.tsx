@@ -48,7 +48,11 @@ export default async function DashboardPage({
         description="将目标拆解为今日可执行的具体动作。"
       >
         <div className="dashboard-grid">
-          <TodayPanel streak={Math.max(1, view.tasks.filter((task) => task.status !== "todo").length)} tasks={view.tasks} />
+          <TodayPanel
+            streak={Math.max(1, view.tasks.filter((task) => task.status !== "todo").length)}
+            tasks={view.tasks}
+            preferredWindow={insight?.preferredWindowLabel}
+          />
           <InsightPanel
             preferredWindow={insight?.preferredWindowLabel}
             advice={insight?.nextAdvice}
