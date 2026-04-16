@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { type ReviewGeneratorOptions, generateWeeklyReview } from "@/lib/ai/review-generator";
+import { generateWeeklyReview } from "@/lib/ai/review-generator";
+import { resolveAiOptionsFromEnv } from "@/lib/ai/resolve-ai-options";
 import { trackEvent } from "@/lib/analytics/events";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
@@ -19,10 +20,7 @@ export async function POST(request: NextRequest) {
 
   const env = await getOptionalCloudflareEnv();
   const db = env?.DB ? getDb(env) : null;
-  const aiOptions: ReviewGeneratorOptions = {
-    apiKey: (env?.DASHSCOPE_API_KEY as string | undefined) || process.env.DASHSCOPE_API_KEY,
-    model: (env?.DASHSCOPE_MODEL as string | undefined) || process.env.DASHSCOPE_MODEL,
-  };
+  const aiOptions = resolveAiOptionsFromEnv(env);
 
   if (db) {
     const persistedReview = await runWithOptionalDbFallback(async () => {

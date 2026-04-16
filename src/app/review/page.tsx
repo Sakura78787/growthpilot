@@ -1,6 +1,7 @@
 import { SiteShell } from "@/components/layout/site-shell";
 import { ReviewSummary } from "@/components/review/review-summary";
-import { type ReviewGeneratorOptions, generateWeeklyReview } from "@/lib/ai/review-generator";
+import { generateWeeklyReview } from "@/lib/ai/review-generator";
+import { resolveAiOptionsFromEnv } from "@/lib/ai/resolve-ai-options";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
 import { buildReviewSourceFromTasks, buildReviewViewModel, getLatestReview } from "@/lib/db/queries/reviews";
@@ -18,10 +19,7 @@ let pendingReviewCache: Promise<{
 export default async function ReviewPage() {
   const env = await getOptionalCloudflareEnv();
   const db = env?.DB ? getDb(env) : null;
-  const aiOptions: ReviewGeneratorOptions = {
-    apiKey: (env?.DASHSCOPE_API_KEY as string | undefined) || process.env.DASHSCOPE_API_KEY,
-    model: (env?.DASHSCOPE_MODEL as string | undefined) || process.env.DASHSCOPE_MODEL,
-  };
+  const aiOptions = resolveAiOptionsFromEnv(env);
 
   if (db) {
     const reviewPayload = await runWithOptionalDbFallback(async () => {

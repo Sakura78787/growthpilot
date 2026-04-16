@@ -1,15 +1,13 @@
 import { extractJsonObject } from "@/lib/ai/extract-json-object";
+import { resolveLlmConfig, type LlmConfig } from "@/lib/ai/llm-config";
 import {
   buildWeeklyReviewFallback,
   type WeeklyReviewFallback,
   type WeeklyReviewFallbackInput,
 } from "@/lib/ai/rules";
 
-const defaultModel = "tongyi-xiaomi-analysis-flash";
-
 export type ReviewGeneratorOptions = {
-  apiKey?: string;
-  model?: string;
+  llm?: LlmConfig;
 };
 
 const defaultReviewInput: WeeklyReviewFallbackInput = {
@@ -47,10 +45,11 @@ async function generatePersonalizedReview(
   options?: ReviewGeneratorOptions,
 ): Promise<WeeklyReviewFallback> {
   const fallback = buildWeeklyReviewFallback(input);
-  const apiKey = options?.apiKey?.trim() || process.env.DASHSCOPE_API_KEY?.trim();
-  const model = options?.model?.trim() || process.env.DASHSCOPE_MODEL?.trim() || defaultModel;
+  const config = resolveLlmConfig(
+    options?.llm ? { apiKey: options.llm.apiKey, baseUrl: options.llm.baseUrl, model: options.llm.model } : undefined,
+  );
 
-  if (!apiKey) {
+  if (!config) {
     return fallback;
   }
 
@@ -72,14 +71,14 @@ async function generatePersonalizedReview(
   ].join("\n");
 
   try {
-    const response = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", {
+    const response = await fetch(`${config.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
       },
       body: JSON.stringify({
-        model,
+        model: config.model,
         messages: [
           {
             role: "system",
@@ -89,13 +88,12 @@ async function generatePersonalizedReview(
           { role: "user", content: userPayload },
         ],
         temperature: 0,
-        top_k: 1,
       }),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("DashScope API Error (review-generator):", response.status, errorBody);
+      console.error("LLM API Error (review-generator):", response.status, errorBody);
       return fallback;
     }
 
@@ -123,7 +121,7 @@ async function generatePersonalizedReview(
       highlights: fallback.highlights,
     };
   } catch (error) {
-    console.error("Fetch Exception (review-generator):", error);
+    console.error("LLM Fetch Exception (review-generator):", error);
     return fallback;
   }
 }

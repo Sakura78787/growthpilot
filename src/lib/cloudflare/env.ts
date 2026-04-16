@@ -3,8 +3,9 @@ import type { AnyD1Database } from "drizzle-orm/d1";
 
 export type CloudflareEnv = {
   DB: AnyD1Database;
-  DASHSCOPE_API_KEY?: string;
-  DASHSCOPE_MODEL?: string;
+  LLM_API_KEY?: string;
+  LLM_BASE_URL?: string;
+  LLM_MODEL?: string;
 };
 
 export function assertEnv(env: Partial<CloudflareEnv> | undefined): CloudflareEnv {

@@ -1,4 +1,5 @@
 import { extractJsonObject } from "@/lib/ai/extract-json-object";
+import { resolveLlmConfig, type LlmConfig } from "@/lib/ai/llm-config";
 import type { GoalPlanSeed } from "@/lib/mock/seed-data";
 import { buildGoalPlan } from "@/lib/mock/seed-data";
 import type { GoalRequest } from "@/lib/validation/goals";
@@ -10,11 +11,8 @@ export type PersonalizedGoalPlan = {
 };
 
 export type GoalPlannerOptions = {
-  apiKey?: string;
-  model?: string;
+  llm?: LlmConfig;
 };
-
-const defaultModel = "tongyi-xiaomi-analysis-flash";
 
 function normalizeTitle(value: unknown, fallback: string) {
   if (typeof value !== "string") {
@@ -96,10 +94,11 @@ export async function generatePersonalizedGoalPlan(
   options?: GoalPlannerOptions,
 ): Promise<PersonalizedGoalPlan> {
   const fallback = buildGoalPlannerFallback(input);
-  const apiKey = options?.apiKey?.trim() || process.env.DASHSCOPE_API_KEY?.trim();
-  const model = options?.model?.trim() || process.env.DASHSCOPE_MODEL?.trim() || defaultModel;
+  const config = resolveLlmConfig(
+    options?.llm ? { apiKey: options.llm.apiKey, baseUrl: options.llm.baseUrl, model: options.llm.model } : undefined,
+  );
 
-  if (!apiKey) {
+  if (!config) {
     return fallback;
   }
 
@@ -118,26 +117,25 @@ export async function generatePersonalizedGoalPlan(
   ].join("\n");
 
   try {
-    const response = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", {
+    const response = await fetch(`${config.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
       },
       body: JSON.stringify({
-        model,
+        model: config.model,
         messages: [
           { role: "system", content: "你只输出合法 JSON 对象一行或多行均可，禁止 markdown 与任何非 JSON 内容。" },
           { role: "user", content: prompt },
         ],
         temperature: 0,
-        top_k: 1,
       }),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("DashScope API Error (goal-planner):", response.status, errorBody);
+      console.error("LLM API Error (goal-planner):", response.status, errorBody);
       return fallback;
     }
 
@@ -162,7 +160,7 @@ export async function generatePersonalizedGoalPlan(
       planReason: normalizeTitle(parsed["planReason"], "模型已根据你的输入做了轻量个性化改写。"),
     };
   } catch (error) {
-    console.error("Fetch Exception (goal-planner):", error);
+    console.error("LLM Fetch Exception (goal-planner):", error);
     return fallback;
   }
 }
