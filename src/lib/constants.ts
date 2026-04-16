@@ -1,4 +1,2 @@
-/**
- * MVP 阶段占位用户 ID；后续接入真实认证后应替换为会话中的用户标识。
- */
+// 暂时写死的占位用户，后面接了认证再换
 export const DEFAULT_USER_ID = "growthpilot-demo-user" as const;

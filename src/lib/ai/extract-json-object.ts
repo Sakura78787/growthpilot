@@ -1,6 +1,4 @@
-/**
- * First balanced `{ ... }` slice, respecting JSON string escapes so `}` inside a value does not end early.
- */
+// 从 LLM 输出里切出第一个完整的 JSON 对象，处理好转义和嵌套
 function sliceBalancedJsonObject(source: string, start: number): string | null {
   if (source[start] !== "{") {
     return null;
@@ -45,9 +43,7 @@ function sliceBalancedJsonObject(source: string, start: number): string | null {
   return null;
 }
 
-/**
- * Pulls a JSON object substring from LLM output, tolerating ```json fences and leading prose.
- */
+// 从大模型原始输出里捞 JSON，带 ```json 围栏也能处理
 export function extractJsonObject(raw: string): string | null {
   const jsonFenced = raw.match(/```json\s*([\s\S]*?)```/i);
   let source: string;

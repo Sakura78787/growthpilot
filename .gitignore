@@ -9,6 +9,7 @@
 /.superpowers
 /.git-ssh-helper
 /.open-next
+/.cursor
 /playwright-report
 *.log
 .env*

@@ -1,4 +1,4 @@
-/** OpenCode Go (OpenAI-compatible): https://opencode.ai/docs/zh-cn/go/ — Qwen3.5 Plus → /zen/go/v1/chat/completions */
+// 默认用 OpenCode Go 的兼容接口，也可以在环境变量里换成别的
 const DEFAULT_BASE_URL = "https://opencode.ai/zen/go/v1";
 const DEFAULT_MODEL = "qwen3.5-plus";
 

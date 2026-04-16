@@ -1,81 +1,110 @@
 # GrowthPilot
 
-GrowthPilot 是一个面向中国大陆大学生的成长驾驶舱产品。核心闭环是：
+帮大学生把一个大目标拆成每天能开始的小动作，做完记一笔，一周下来自动复盘。
 
-`目标拆解 -> 每日执行 -> 行为记录 -> 周期复盘 -> 数据反馈`
+核心就是：**目标拆解 → 每日执行 → 行为记录 → 周期复盘 → 数据反馈**。
 
-当前仓库保留的是可运行、可测试、可继续开发的最小交付版本。
+## 主要功能
 
-## 当前能力
+- 中文首页，讲清楚产品是什么
+- `/onboarding` — 填目标，大模型帮你拆成可执行的计划
+- `/dashboard` — 看今天该干什么、整体进度怎么样
+- `/goals/[goalId]` — 某个目标的详情和时间线
+- `/focus` — 专注执行当天最关键的一个动作
+- `/review` — 周复盘，大模型根据你的执行记录生成总结和建议
+- `/profile` — 成长档案，累计数据和标签
 
-- 中文首页与品牌展示
-- 目标引导页 `/onboarding`
-- 成长驾驶舱 `/dashboard`
-- 目标详情 `/goals/[goalId]`
-- 今日行动 `/focus`
-- 周复盘 `/review`
-- 个人页 `/profile`
-- D1 + Drizzle 数据层
-- GitHub Actions -> Cloudflare 自动部署链路
+## 技术栈
 
-## 本地开发
+- Next.js 16 + React 19 + TypeScript
+- Tailwind CSS 4
+- Cloudflare D1 + Drizzle ORM
+- Zod 做校验
+- 大模型走 OpenAI 兼容接口（默认 Qwen3.5 Plus）
+- 部署在 Cloudflare Workers
+
+## 快速开始
+
+**环境要求：** Node.js 20+
 
 ```bash
+npm install
 npm run dev
 ```
 
-默认访问：
+启动后访问 http://127.0.0.1:3000
 
-```text
-http://127.0.0.1:3000
+### 环境变量
+
+复制 `.env.example` 到 `.env.local`：
+
+- `LLM_API_KEY` — 大模型 API 密钥，必填。没填的话会用规则模板兜底，不会报错但生成的内容不个性化
+- `LLM_BASE_URL` — API 根路径，默认 `https://opencode.ai/zen/go/v1`
+- `LLM_MODEL` — 模型 ID，默认 `qwen3.5-plus`
+
+想用别的大模型服务也行，只要兼容 OpenAI 的 `/chat/completions` 接口，改这三个变量就行。
+
+### 测试
+
+```bash
+npm run test:unit
+npm run test:component
+npm run build
 ```
 
-## 当前验证方式
+没有 E2E 自动化测试，手动验证为主。
 
-- `npm run test:unit`
-- `npm run test:component`
-- `npm run build`
+## 项目结构
 
-当前项目不再保留 E2E 自动化测试，改为人工手测。
+```
+src/
+  app/           # 页面和 API 路由
+  components/    # UI 组件，按页面分目录
+  lib/
+    ai/          # 大模型调用和 JSON 提取
+    client/      # 浏览器端存储
+    cloudflare/  # Cloudflare 环境适配
+    db/          # 数据库 schema 和查询
+    mock/        # 无大模型时的兜底数据
+    validation/  # Zod schema
+  styles/        # 全局 CSS
 
-## 环境变量
+drizzle/         # 数据库迁移 SQL
+public/          # 静态资源
+tests/           # 单元测试和组件测试
+```
 
-复制 `.env.example` 到 `.env.local` 后填写：
+## 线上部署
 
-- `LLM_API_KEY`：大模型 API 密钥（必填，缺失则回退为规则模板）。若使用 **[OpenCode Go](https://opencode.ai/docs/zh-cn/go/)**，在 Zen 控制台订阅 Go 后复制密钥，与 TUI 里 `/connect` → **OpenCode Go** 相同来源（见 [Go 文档 · 工作原理](https://opencode.ai/docs/zh-cn/go/)）。
-- `LLM_BASE_URL`：OpenAI 兼容 API 根路径，默认 **`https://opencode.ai/zen/go/v1`**。这与 [Go · API 端点](https://opencode.ai/docs/zh-cn/go/) 表中 **Qwen3.5 Plus** 的 `https://opencode.ai/zen/go/v1/chat/completions` 一致（代码会再拼 `/chat/completions`）。若改用其他全球可用 OpenAI 兼容服务，只改此三项即可。
-- `LLM_MODEL`：请求体里的模型 ID，默认 **`qwen3.5-plus`**（与 Go 文档表格一致）。说明：OpenCode 应用内配置会用 `opencode-go/<model-id>` 形式，**本项目的 HTTP 请求仍使用表格中的短 ID**（如 `qwen3.5-plus`），除非你使用的网关明确要求带前缀。
+推荐流程：本地开发 → git push → GitHub Actions → Cloudflare
 
-### Cloudflare 线上部署
-
-线上部署除配置 GitHub Secrets 外，还需在 Cloudflare 设置 Worker 环境变量：
-
-1. 在 Cloudflare Dashboard → Workers → growthpilot → Settings → Variables 中设置：
-   - `LLM_API_KEY`（选择 Encrypt 加密存储）
-   - `LLM_BASE_URL`（已在 `wrangler.jsonc` 的 `vars` 中默认配置，可覆盖）
-   - `LLM_MODEL`（已在 `wrangler.jsonc` 的 `vars` 中默认配置，可覆盖）
-2. 或通过命令行：
-   ```bash
-   npx wrangler secret put LLM_API_KEY
-   ```
-
-## 推荐部署方式
-
-推荐流程是：
-
-`本地开发 -> git push -> GitHub Actions -> Cloudflare`
-
-仓库已经包含 workflow：
-
-- `.github/workflows/deploy-cloudflare.yml`
-
-GitHub 侧还需要配置两个 Secrets：
+仓库里已经有 CI 配置（`.github/workflows/deploy-cloudflare.yml`），需要配置两个 GitHub Secrets：
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-## 交接文档
+部署前还要在 Cloudflare 设置：
 
-详细交接内容见：
+1. D1 数据库 ID 写到 `wrangler.jsonc` 的 `database_id` 字段
+2. Worker 环境变量里加密存储 `LLM_API_KEY`
+3. `LLM_BASE_URL` 和 `LLM_MODEL` 可以在 `wrangler.jsonc` 的 `vars` 里改，也可以在 Cloudflare Dashboard 覆盖
 
-- [docs/HANDOFF.md](docs/HANDOFF.md)
+```bash
+npx wrangler secret put LLM_API_KEY
+```
+
+## 已知问题
+
+- 用户认证还是写死的 `growthpilot-demo-user`，没有真正的登录系统
+- Focus 页面没有 DB 的时候只能从 localStorage 读，新设备或清缓存后数据就没了
+- 周复盘的大模型调用没有缓存，每次访问都可能重新请求
+- Profile 页的数据目前是凑出来的，不是真实积累
+- 没有做移动端适配，手机上看体验一般
+
+## 许可证
+
+MIT
+
+## 作者
+
+Sakura — jaysakura@163.com
