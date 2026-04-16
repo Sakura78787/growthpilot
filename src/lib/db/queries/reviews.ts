@@ -1,5 +1,6 @@
 import { desc } from "drizzle-orm";
 
+import { DEFAULT_USER_ID } from "@/lib/constants";
 import type { AppDb } from "@/lib/db/client";
 import { reviews } from "@/lib/db/schema";
 
@@ -183,7 +184,7 @@ export async function createReviewRecord(
 
   const row = {
     id: crypto.randomUUID(),
-    userId: input.userId ?? "growthpilot-demo-user",
+    userId: input.userId ?? DEFAULT_USER_ID,
     weekStart: input.weekStart ?? monday.toISOString().slice(0, 10),
     completionRate: input.completionRate,
     topDelayReason: input.topDelayReason,

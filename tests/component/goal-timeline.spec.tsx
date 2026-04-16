@@ -50,7 +50,7 @@ describe("GoalTimeline", () => {
       />,
     );
 
-    expect(screen.getByText("阶段拆解")).toBeInTheDocument();
+    expect(screen.getByText("目标阶段拆解")).toBeInTheDocument();
     expect(screen.getByText("已完成 1 / 3 个关键动作")).toBeInTheDocument();
     expect(screen.getByText("先补齐作品集与简历底稿")).toBeInTheDocument();
     expect(screen.getAllByText("补一张流程图")).toHaveLength(2);

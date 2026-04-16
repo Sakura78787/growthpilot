@@ -40,6 +40,16 @@ function normalizeReviewField(value: unknown, fallback: string) {
   return trimmed.length > 0 ? trimmed : fallback;
 }
 
+function normalizeHighlights(value: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+  const items = value
+    .map((entry) => (typeof entry === "string" ? entry.trim() : String(entry)))
+    .filter((entry) => entry.length > 0);
+  return items.length > 0 ? items.slice(0, 8) : fallback;
+}
+
 async function generatePersonalizedReview(
   input: WeeklyReviewFallbackInput,
   options?: ReviewGeneratorOptions,
@@ -61,7 +71,7 @@ async function generatePersonalizedReview(
   const notesLine = recentNotesText.length > 0 ? recentNotesText : "（无近期记录）";
 
   const userPayload = [
-    "本周数据如下，请据此写周报 JSON。",
+    "以下是用户本周的执行与记录摘要，请据此生成本周复盘 JSON。",
     `完成率（%）：${input.completionRate}`,
     `主要拖延/阻碍原因：${input.topDelayReason}`,
     `最易专注时段：${input.bestFocusPeriod}`,
@@ -83,11 +93,11 @@ async function generatePersonalizedReview(
           {
             role: "system",
             content:
-              "Act as an empathetic Growth Coach for a Chinese college student. Return ONLY a valid JSON object with two fields: summary (a warm, brief paragraph summarizing the week) and advice (1-2 actionable tips for next week based on the delay reasons). Write summary and advice in Chinese.",
+              "你是面向中国大学生的成长教练，语气克制、具体、可执行。只输出合法 JSON 对象，不要 markdown。字段：summary（一段中文周报摘要）、advice（1-3 条可执行建议，合并为一段文字）、highlights（字符串数组，3-6 条要点，每条不超过 40 字）。请根据数据差异给出不同角度的观察，避免每次重复「拆小任务、20 分钟起步」这类套话。",
           },
           { role: "user", content: userPayload },
         ],
-        temperature: 0,
+        temperature: 0.4,
       }),
     });
 
@@ -113,12 +123,13 @@ async function generatePersonalizedReview(
     const parsed = JSON.parse(jsonSource) as {
       summary?: unknown;
       advice?: unknown;
+      highlights?: unknown;
     };
 
     return {
       summary: normalizeReviewField(parsed.summary, fallback.summary),
       advice: normalizeReviewField(parsed.advice, fallback.advice),
-      highlights: fallback.highlights,
+      highlights: normalizeHighlights(parsed.highlights, fallback.highlights),
     };
   } catch (error) {
     console.error("LLM Fetch Exception (review-generator):", error);

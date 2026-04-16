@@ -7,7 +7,8 @@ if (process.env.NODE_ENV === "development") {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  typedRoutes: true,
+  /** 动态目标详情等链接使用模板字符串；关闭严格路由类型以避免各处断言 */
+  typedRoutes: false,
 };
 
 export default nextConfig;

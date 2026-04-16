@@ -5,6 +5,8 @@ type SiteShellProps = {
   title: string;
   description?: string;
   badge?: string;
+  /** 页面顶部标签；不传则不展示 */
+  heroChip?: string;
   children: ReactNode;
 };
 
@@ -12,13 +14,13 @@ const navItems = [
   { href: "/", label: "首页" },
   { href: "/onboarding", label: "开始计划" },
   { href: "/dashboard", label: "成长驾驶舱" },
-  { href: "/review", label: "本周复盘" },
 ] as const;
 
 export function SiteShell({
   title,
   description = "把目标拆成今天就能开始的动作，让每一步都更轻、更稳。",
   badge = "GrowthPilot",
+  heroChip,
   children,
 }: SiteShellProps) {
   return (
@@ -43,7 +45,7 @@ export function SiteShell({
         </header>
 
         <section className="shell-hero-card">
-          <p className="section-chip">轻盈推进，不用硬扛</p>
+          {heroChip ? <p className="section-chip">{heroChip}</p> : null}
           <h1>{title}</h1>
           <p>{description}</p>
         </section>

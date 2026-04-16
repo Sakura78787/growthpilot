@@ -23,6 +23,5 @@ describe("ProfileSummary", () => {
     expect(screen.getByText("20:00 - 22:00")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "回到成长驾驶舱" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "继续今日行动" })).toHaveAttribute("href", "/focus");
-    expect(screen.getByRole("link", { name: "查看本周复盘" })).toHaveAttribute("href", "/review");
   });
 });

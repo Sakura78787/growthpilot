@@ -14,11 +14,15 @@ export function TodayPanel({
     skipped: "已跳过",
   } as const;
 
+  const n = tasks.length;
+
   return (
     <section className="shell-panel shell-panel-strong">
       <p className="section-chip">连续行动 {streak} 天</p>
-      <h2 className="panel-title">今天先完成 3 个关键动作</h2>
-      <p className="panel-copy">先把最难开始的事情压缩到 20 分钟以内，你会更容易动起来。</p>
+      <h2 className="panel-title">
+        今天先完成 {n} 个关键动作
+      </h2>
+      <p className="panel-copy">逐步完成今日安排的动作。</p>
 
       <ul className="task-list" aria-label="今日任务">
         {tasks.map((task) => (

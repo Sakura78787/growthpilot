@@ -16,7 +16,7 @@ export default async function ProfilePage() {
   return (
     <SiteShell
       title="我的成长档案"
-      description="把你的行动风格、节奏偏好和最近亮点整理成一页可讲故事的成长快照。"
+      description="汇总你的目标、节奏和行动记录。"
     >
       <ProfileSummary {...view} />
     </SiteShell>

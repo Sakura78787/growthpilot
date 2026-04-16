@@ -84,7 +84,7 @@ export function GoalForm() {
   return (
     <form className="form-shell" onSubmit={handleSubmit}>
       <label className="field-block">
-        <span>这 14 天最想推进的目标</span>
+        <span>你的目标</span>
         <input
           name="title"
           placeholder="比如：做出两个能投产品经理暑期实习的项目"
@@ -137,7 +137,7 @@ export function GoalForm() {
 
       <div className="form-tip-card">
         <p className="form-tip-title">GrowthPilot 会怎么帮你？</p>
-        <p className="form-tip-copy">先给你一版中文目标拆解，再按你的基础与可投入时长做轻量个性化调整。</p>
+        <p className="form-tip-copy">根据你的基础和可投入时长，生成可执行的行动拆解。</p>
       </div>
 
       {feedback ? (
@@ -147,7 +147,7 @@ export function GoalForm() {
       ) : null}
 
       <button type="submit" className="primary-button" disabled={isPending}>
-        {isPending ? "正在生成..." : "生成我的成长计划"}
+        {isPending ? "正在生成..." : "开始规划"}
       </button>
     </form>
   );

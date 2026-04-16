@@ -40,9 +40,6 @@ export function ProfileSummary({
           <Link href="/focus" className="primary-button">
             继续今日行动
           </Link>
-          <Link href="/review" className="secondary-link">
-            查看本周复盘
-          </Link>
         </div>
       </article>
 
@@ -50,13 +47,13 @@ export function ProfileSummary({
         <article className="shell-panel shell-panel-soft">
           <p className="section-chip">行动节奏</p>
           <h3 className="task-title">{streakLabel}</h3>
-          <p className="panel-copy">只要继续保住一个小步启动，你的节奏感就会越来越稳。</p>
+          <p className="panel-copy">保持每日行动节奏。</p>
         </article>
 
         <article className="shell-panel shell-panel-soft">
           <p className="section-chip">偏好时段</p>
           <h3 className="task-title">{preferredWindowLabel}</h3>
-          <p className="panel-copy">把需要沉浸推进的动作尽量放到这个时间窗里，启动阻力会更低。</p>
+          <p className="panel-copy">建议在该时段安排需要专注的任务。</p>
         </article>
 
         <article className="shell-panel shell-panel-soft">

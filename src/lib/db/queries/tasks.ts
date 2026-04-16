@@ -1,5 +1,6 @@
 import { asc, eq, or } from "drizzle-orm";
 
+import { DEFAULT_USER_ID } from "@/lib/constants";
 import type { AppDb } from "@/lib/db/client";
 import { taskLogs, tasks } from "@/lib/db/schema";
 import type { TaskUpdateInput } from "@/lib/validation/tasks";
@@ -50,7 +51,7 @@ export async function updateTaskById(
 ) {
   const { taskPatch, logRecord } = buildTaskUpdateArtifacts({
     taskId,
-    userId: options.userId ?? "growthpilot-demo-user",
+    userId: options.userId ?? DEFAULT_USER_ID,
     payload,
   });
 
@@ -88,6 +89,7 @@ export async function getFocusTask(db: AppDb) {
   const rows = await db
     .select({
       id: tasks.id,
+      goalId: tasks.goalId,
       title: tasks.title,
       plannedDuration: tasks.plannedDuration,
       status: tasks.status,

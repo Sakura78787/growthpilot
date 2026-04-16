@@ -47,21 +47,38 @@ function normalizeGoalPlan(input: unknown, fallback: GoalPlanSeed): GoalPlanSeed
 
   const milestoneSource = candidate.milestones ?? candidate.milestone;
   const taskSource = candidate.tasks ?? candidate.task;
+  const rawMilestones = (Array.isArray(milestoneSource) ? milestoneSource : []).slice(0, 4);
+  const rawTasks = (Array.isArray(taskSource) ? taskSource : []).slice(0, 6);
 
-  const milestones = (Array.isArray(milestoneSource) ? milestoneSource : []).slice(0, 3).map((item, index) => ({
-    title: normalizeTitle(item?.title, fallback.milestones[index]?.title ?? `阶段 ${index + 1}`),
-    targetDateLabel: normalizeTitle(item?.targetDateLabel, fallback.milestones[index]?.targetDateLabel ?? `第 ${index + 1} 周`),
-  }));
-
-  const tasks = (Array.isArray(taskSource) ? taskSource : []).slice(0, 3).map((item, index) => ({
-    title: normalizeTitle(item?.title, fallback.tasks[index]?.title ?? `关键动作 ${index + 1}`),
-    bucket: normalizeTitle(item?.bucket, fallback.tasks[index]?.bucket ?? "action"),
-    suggestedDuration: normalizeDuration(item?.suggestedDuration, fallback.tasks[index]?.suggestedDuration ?? 20),
-  }));
-
-  if (milestones.length !== 3 || tasks.length !== 3) {
+  if (rawMilestones.length < 2 || rawMilestones.length > 4 || rawTasks.length < 3 || rawTasks.length > 6) {
     return fallback;
   }
+
+  const milestones = rawMilestones.map((item, index) => ({
+    title: normalizeTitle(
+      item?.title,
+      fallback.milestones[Math.min(index, fallback.milestones.length - 1)]?.title ?? `阶段 ${index + 1}`,
+    ),
+    targetDateLabel: normalizeTitle(
+      item?.targetDateLabel,
+      fallback.milestones[Math.min(index, fallback.milestones.length - 1)]?.targetDateLabel ?? `第 ${index + 1} 周`,
+    ),
+  }));
+
+  const tasks = rawTasks.map((item, index) => ({
+    title: normalizeTitle(
+      item?.title,
+      fallback.tasks[Math.min(index, fallback.tasks.length - 1)]?.title ?? `关键动作 ${index + 1}`,
+    ),
+    bucket: normalizeTitle(
+      item?.bucket,
+      fallback.tasks[Math.min(index, fallback.tasks.length - 1)]?.bucket ?? "action",
+    ),
+    suggestedDuration: normalizeDuration(
+      item?.suggestedDuration,
+      fallback.tasks[Math.min(index, fallback.tasks.length - 1)]?.suggestedDuration ?? 20,
+    ),
+  }));
 
   return {
     milestones,
@@ -103,10 +120,12 @@ export async function generatePersonalizedGoalPlan(
   }
 
   const prompt = [
-    "你是中文产品成长教练，请基于输入生成恰好 3 个阶段里程碑和恰好 3 个关键动作（不要多也不要少）。",
-    "要求：内容具体、可开始、适合中国大陆大学生，且每个动作的 suggestedDuration 为 15-120 之间的整数（分钟）。",
+    "你是中文产品成长教练。请根据用户输入，生成可执行的目标拆解。",
+    "里程碑数量须在 2～4 个之间；关键动作数量须在 3～6 个之间（按难度与周期自行决定，不要机械凑数）。",
+    "请结合用户的当前基础、每日可用时长、主要阻碍，决定拆解粒度：零基础可更细，有经验可更偏产出。",
+    "要求：内容具体、可开始、适合中国大陆大学生；每个动作的 suggestedDuration 为 15-120 之间的整数（分钟）。",
     "只输出一个 JSON 对象：不要使用 markdown、不要代码围栏、不要前后解释或多余文字。",
-    "字段名必须为 planReason、milestones、tasks；milestones 与 tasks 均为长度 3 的数组。",
+    "字段名必须为 planReason、milestones、tasks；milestones 为 2～4 项数组，tasks 为 3～6 项数组。",
     "示例结构（请替换为你的内容）：",
     '{ "planReason": "一句解释", "milestones":[{"title":"...","targetDateLabel":"..."}], "tasks":[{"title":"...","bucket":"...","suggestedDuration":20}] }',
     `目标：${input.title}`,
@@ -129,7 +148,7 @@ export async function generatePersonalizedGoalPlan(
           { role: "system", content: "你只输出合法 JSON 对象一行或多行均可，禁止 markdown 与任何非 JSON 内容。" },
           { role: "user", content: prompt },
         ],
-        temperature: 0,
+        temperature: 0.4,
       }),
     });
 

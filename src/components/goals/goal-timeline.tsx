@@ -45,9 +45,9 @@ export function GoalTimeline({
       <div className="detail-banner goal-timeline-banner">
         <div>
           <p className="section-chip">阶段拆解</p>
-          <h2 className="panel-title">先顺着正在推进的那条线，稳稳把目标往前挪</h2>
+          <h2 className="panel-title">目标阶段拆解</h2>
           <p className="goal-progress-text">{progressLabel}</p>
-          <p className="panel-copy">不用一次性做完全部动作，先让下一小步变得更容易开始。</p>
+          <p className="panel-copy">按阶段逐步推进目标。</p>
         </div>
 
         <div className="goal-next-card">

@@ -1,3 +1,4 @@
+import { DEFAULT_USER_ID } from "@/lib/constants";
 import type { GoalPlanSeed } from "@/lib/mock/seed-data";
 import { buildGoalPlan } from "@/lib/mock/seed-data";
 import type { GoalRequest } from "@/lib/validation/goals";
@@ -21,7 +22,6 @@ type BuildGoalGraphOptions = {
 };
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_USER_ID = "growthpilot-demo-user";
 
 function formatDate(value: Date) {
   return value.toISOString().slice(0, 10);

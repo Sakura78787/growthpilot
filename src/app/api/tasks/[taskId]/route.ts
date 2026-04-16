@@ -1,6 +1,7 @@
 import { ZodError } from "zod";
 import { NextRequest, NextResponse } from "next/server";
 
+import { DEFAULT_USER_ID } from "@/lib/constants";
 import { trackEvent } from "@/lib/analytics/events";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
@@ -20,12 +21,12 @@ export async function PATCH(
     if (db) {
       const persisted = await runWithOptionalDbFallback(async () => {
         const result = await updateTaskById(db, taskId, payload, {
-          userId: "growthpilot-demo-user",
+          userId: DEFAULT_USER_ID,
         });
 
         if (result.task) {
           await trackEvent(db, {
-            userId: "growthpilot-demo-user",
+            userId: DEFAULT_USER_ID,
             eventName:
               payload.status === "doing"
                 ? "task.started"

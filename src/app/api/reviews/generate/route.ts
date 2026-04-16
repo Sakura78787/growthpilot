@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { DEFAULT_USER_ID } from "@/lib/constants";
 import { generateWeeklyReview } from "@/lib/ai/review-generator";
 import { resolveAiOptionsFromEnv } from "@/lib/ai/resolve-ai-options";
 import { trackEvent } from "@/lib/analytics/events";
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
       });
 
       await trackEvent(db, {
-        userId: "growthpilot-demo-user",
+        userId: DEFAULT_USER_ID,
         eventName: "review.generated",
         eventPayload: merged,
       });

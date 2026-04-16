@@ -6,6 +6,7 @@ import { SiteShell } from "@/components/layout/site-shell";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
 import { buildDashboardViewModel, getGoalDetail, getLatestGoalDetail } from "@/lib/db/queries/goals";
+import { getProfileViewFromDb } from "@/lib/db/queries/profile";
 
 export const dynamic = "force-dynamic";
 
@@ -15,32 +16,6 @@ type SearchParamValue = string | string[] | undefined;
 
 function pickFirst(value: SearchParamValue) {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function resolvePlanBadgeFromSnapshot(value: string | null | undefined) {
-  if (!value) {
-    return {
-      source: "rules" as const,
-      reason: "当前展示的是规则模板生成的首版计划。",
-    };
-  }
-
-  try {
-    const parsed = JSON.parse(value) as {
-      planSource?: "llm" | "rules";
-      planReason?: string;
-    };
-
-    return {
-      source: parsed.planSource ?? ("rules" as const),
-      reason: parsed.planReason ?? "当前展示的是规则模板生成的首版计划。",
-    };
-  } catch {
-    return {
-      source: "rules" as const,
-      reason: "当前展示的是规则模板生成的首版计划。",
-    };
-  }
 }
 
 export default async function DashboardPage({
@@ -59,22 +34,26 @@ export default async function DashboardPage({
       )
     : null;
 
-  if (dbDetail?.goal) {
+  if (dbDetail?.goal && db) {
     const view = buildDashboardViewModel({
       goal: dbDetail.goal,
       tasks: dbDetail.tasks,
     });
     const detailHref = `/goals/${view.goalId}`;
-    const badge = resolvePlanBadgeFromSnapshot(dbDetail.goal.profileSnapshot);
+    const insight = await runWithOptionalDbFallback(() => getProfileViewFromDb(db), null);
 
     return (
       <SiteShell
         title="成长驾驶舱"
-        description="把目标拆成今天就能开始的动作，同时保留一点轻盈感，让推进这件事没那么累。"
+        description="将目标拆解为今日可执行的具体动作。"
       >
         <div className="dashboard-grid">
           <TodayPanel streak={Math.max(1, view.tasks.filter((task) => task.status !== "todo").length)} tasks={view.tasks} />
-          <InsightPanel />
+          <InsightPanel
+            preferredWindow={insight?.preferredWindowLabel}
+            advice={insight?.nextAdvice}
+            goalDetailHref={detailHref}
+          />
         </div>
 
         <section className="shell-panel shell-panel-soft">
@@ -82,9 +61,8 @@ export default async function DashboardPage({
             <div>
               <p className="section-chip">当前主目标</p>
               <h2 className="panel-title">{view.goalTitle}</h2>
-              <p className="panel-copy">你当前选择的是“{view.goalCategoryLabel}”类型目标，系统已经优先从真实数据记录里读取你的阶段任务与推进状态。</p>
               <p className="panel-copy">
-                生成方式：{badge.source === "llm" ? "大模型个性化" : "规则模板"}。{badge.reason}
+                你当前选择的是「{view.goalCategoryLabel}」类型目标，以下为该目标下的阶段任务与推进状态。
               </p>
             </div>
             <a href={detailHref} className="secondary-link">
@@ -99,16 +77,12 @@ export default async function DashboardPage({
   const goalId = requestedGoalId ?? "goal-demo-1";
   const goalTitle = pickFirst(params.goalTitle) ?? defaultGoalTitle;
   const goalCategory = normalizeGoalCategory(pickFirst(params.goalCategory));
-  const planSource = pickFirst(params.planSource) === "llm" ? "llm" : "rules";
-  const planReason = pickFirst(params.planReason) ?? "当前展示的是规则模板生成的首版计划。";
 
   return (
     <DashboardOfflineView
       goalId={goalId}
       goalTitle={goalTitle}
       goalCategory={goalCategory}
-      planSourceFromUrl={planSource}
-      planReasonFromUrl={planReason}
     />
   );
 }

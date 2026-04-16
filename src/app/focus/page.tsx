@@ -17,13 +17,14 @@ export default async function FocusPage() {
   return (
     <SiteShell
       title="今日行动"
-      description="先从一个能开始的动作出发，把拖延压低一点，把今天的节奏轻轻拉回来。"
+      description="完成今日关键动作，逐步推进目标。"
     >
       {focusTask ? (
         <FocusSessionCard
           taskId={focusTask.id}
           taskTitle={focusTask.title}
           plannedDuration={focusTask.plannedDuration}
+          goalDetailHref={`/goals/${focusTask.goalId}`}
         />
       ) : (
         <FocusOfflineView />

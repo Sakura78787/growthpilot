@@ -44,9 +44,11 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
     );
   }, [goalId, fallbackTitle, fallbackCategory, stored]);
 
-  const description = stored
-    ? "本次打开优先使用浏览器里缓存的生成结果；连接数据库后将自动切换为持久化记录。"
-    : "当前还没有读到数据库记录，所以先用一版中文拆解把目标节奏、阶段和动作串起来。";
+  const description = "当前使用离线数据展示。";
+  const progressPct =
+    detailView.totalTaskCount > 0
+      ? Math.round((detailView.completedTaskCount / detailView.totalTaskCount) * 100)
+      : 0;
 
   return (
     <SiteShell title="目标详情" description={description}>
@@ -55,15 +57,26 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
           <p className="section-chip">目标卡片</p>
           <h2 className="panel-title">{detailView.goalTitle}</h2>
           <p className="panel-copy">
-            这是一个“{detailView.categoryLabel}”方向目标，目前 {detailView.progressLabel}
-            。别急着一次性做完，先把下一步压缩到身体愿意配合开始的尺度。
+            这是一个「{detailView.categoryLabel}」方向目标，将关键动作拆解为可立即执行的小步骤。
           </p>
+
+          <div
+            className="goal-progress-bar-wrap"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressPct}
+            aria-label="关键动作完成进度"
+          >
+            <div className="goal-progress-bar-fill" style={{ width: `${progressPct}%` }} />
+          </div>
+          <p className="goal-progress-text">{detailView.progressLabel}</p>
 
           <div className="goal-stats-grid">
             <article className="mini-card">
               <span className="mini-label">当前目标类型</span>
               <strong>{detailView.categoryLabel}</strong>
-              <p>保留中文提示和阶段节奏，方便你后面直接拿来展示产品思路。</p>
+              <p>可在下方查看各阶段与关键动作的状态。</p>
             </article>
 
             <article className="mini-card">

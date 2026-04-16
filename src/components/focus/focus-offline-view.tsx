@@ -1,21 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { FocusSessionCard } from "@/components/focus/focus-session-card";
 import { readLastGoalId, readOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
-import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
-type FocusOfflineViewProps = {
-  fallbackGoalTitle?: string;
-  fallbackCategory?: GoalCategory;
-};
-
-export function FocusOfflineView({
-  fallbackGoalTitle = "完成 20 分钟简历优化",
-  fallbackCategory = "job",
-}: FocusOfflineViewProps) {
+export function FocusOfflineView() {
   const [taskInfo, setTaskInfo] = useState<{
+    goalId: string;
     id: string;
     title: string;
     duration: number;
@@ -30,6 +23,7 @@ export function FocusOfflineView({
         const firstTask = stored.planSeed.tasks[0];
         if (firstTask) {
           setTaskInfo({
+            goalId: lastGoalId,
             id: `${lastGoalId}-task-1`,
             title: firstTask.title,
             duration: firstTask.suggestedDuration,
@@ -50,18 +44,19 @@ export function FocusOfflineView({
         taskId={taskInfo.id}
         taskTitle={taskInfo.title}
         plannedDuration={taskInfo.duration}
+        goalDetailHref={`/goals/${taskInfo.goalId}`}
       />
     );
   }
 
-  const plan = buildGoalPlan({ title: fallbackGoalTitle, category: fallbackCategory });
-  const firstTask = plan.tasks[0];
-
   return (
-    <FocusSessionCard
-      taskId="task-demo-1"
-      taskTitle={firstTask?.title ?? fallbackGoalTitle}
-      plannedDuration={firstTask?.suggestedDuration ?? 20}
-    />
+    <section className="shell-panel shell-panel-soft">
+      <p className="section-chip">今日行动</p>
+      <h2 className="panel-title">请先创建目标并生成计划</h2>
+      <p className="panel-copy">本地尚未找到可用的今日任务。请先完成目标创建与计划生成，再回到这里开始专注。</p>
+      <Link href="/onboarding" className="primary-button">
+        去创建目标
+      </Link>
+    </section>
   );
 }

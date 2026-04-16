@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import type { TaskUpdateInput } from "@/lib/validation/tasks";
@@ -14,6 +15,8 @@ type FocusSessionCardProps = {
   taskId?: string;
   taskTitle?: string;
   plannedDuration?: number;
+  /** 完成后「查看目标详情」跳转；不传则该链接指向成长驾驶舱 */
+  goalDetailHref?: string;
 };
 
 type SessionPhase = "idle" | "active" | "done";
@@ -22,6 +25,7 @@ export function FocusSessionCard({
   taskId = "task-demo-1",
   taskTitle = "完成 20 分钟简历优化",
   plannedDuration = 20,
+  goalDetailHref,
 }: FocusSessionCardProps) {
   const [phase, setPhase] = useState<SessionPhase>("idle");
   const [submitting, setSubmitting] = useState(false);
@@ -87,15 +91,13 @@ export function FocusSessionCard({
     <section className="shell-panel shell-panel-strong focus-card">
       <p className="section-chip">今日关键动作</p>
       <h2 className="panel-title">{taskTitle}</h2>
-      <p className="panel-copy">
-        别急着把一整个项目一次做完，先把最难开始的部分压缩到 {plannedDuration} 分钟，身体会更愿意配合你开始。
-      </p>
+      <p className="panel-copy">将任务拆解为 {plannedDuration} 分钟的起步动作。</p>
 
       <div className="focus-meter" aria-hidden="true">
         <span className="focus-meter-ring" />
         <div>
-          <strong>{plannedDuration} 分钟</strong>
-          <p>轻量起步，更容易进入状态</p>
+          <strong>专注 {plannedDuration} 分钟</strong>
+          <p>单次会话时长</p>
         </div>
       </div>
 
@@ -170,12 +172,17 @@ export function FocusSessionCard({
 
       {phase === "done" ? (
         <>
-          <button type="button" className="primary-button" disabled>
-            已完成，继续保持
-          </button>
           <p className="focus-feedback" role="status" aria-live="polite">
-            很好，先完成这一小步，今天的节奏就已经被你拉回来了。
+            已完成今日关键动作。
           </p>
+          <div className="focus-done-actions">
+            <Link href="/dashboard" className="primary-button">
+              返回驾驶舱
+            </Link>
+            <Link href={goalDetailHref ?? "/dashboard"} className="secondary-link">
+              {goalDetailHref ? "查看目标详情" : "打开成长驾驶舱"}
+            </Link>
+          </div>
         </>
       ) : null}
 

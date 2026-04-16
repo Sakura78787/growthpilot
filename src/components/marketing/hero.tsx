@@ -13,9 +13,6 @@ export function Hero() {
         <Link className="hero-primary" href="/onboarding">
           开始今日行动
         </Link>
-        <Link className="hero-secondary" href="/review">
-          查看成长趋势
-        </Link>
       </div>
     </section>
   );

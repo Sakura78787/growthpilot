@@ -5,7 +5,7 @@ export default function OnboardingPage() {
   return (
     <SiteShell
       title="开始你的成长计划"
-      description="告诉 GrowthPilot 你想先推进什么，我们会先给你一版柔和、可执行、中文优先的行动拆解。"
+      description="描述你的目标，GrowthPilot 将生成一份可执行的行动计划。"
     >
       <GoalForm />
     </SiteShell>

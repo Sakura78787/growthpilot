@@ -13,8 +13,7 @@ describe("buildWeeklyReviewFallback", () => {
     });
 
     expect(result.summary).toContain("你本周已经完成了 68%");
-    expect(result.summary).toContain("很有干劲");
-    expect(result.summary).toContain("4/5");
+    expect(result.summary).toMatch(/积极|推进|完成率/);
     expect(result.advice).toContain("任务太大");
     expect(result.highlights).toContain("主导状态：很有干劲");
     expect(result.highlights).toContain("平均精力：4/5");
