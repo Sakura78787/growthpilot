@@ -530,58 +530,9 @@ a {
   }
 }
 
-.metric-grid,
-.chart-grid,
 .profile-grid {
   display: grid;
   gap: 18px;
-}
-
-.funnel-grid,
-.segment-grid {
-  display: grid;
-  gap: 16px;
-}
-
-.metric-card strong {
-  font-size: 30px;
-}
-
-.metric-card p {
-  margin: 8px 0 0;
-}
-
-.console-stack {
-  display: grid;
-  gap: 22px;
-}
-
-.chart-card {
-  min-height: 340px;
-}
-
-.chart-frame {
-  height: 250px;
-}
-
-.funnel-card {
-  position: relative;
-}
-
-.funnel-card::after {
-  content: "";
-  position: absolute;
-  inset: auto 18px -8px auto;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(232, 210, 162, 0.82), rgba(232, 210, 162, 0));
-}
-
-.segment-value {
-  margin: 12px 0 0;
-  color: var(--gp-muted);
-  font-size: 14px;
 }
 
 .goal-detail-grid,
@@ -697,17 +648,8 @@ a {
 }
 
 @media (min-width: 900px) {
-  .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .chart-grid,
   .profile-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .funnel-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .goal-detail-grid,
@@ -718,18 +660,4 @@ a {
   .goal-timeline-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .segment-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.chart-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  border-radius: 24px;
-  color: var(--gp-muted);
-  background: rgba(255, 255, 255, 0.34);
 }

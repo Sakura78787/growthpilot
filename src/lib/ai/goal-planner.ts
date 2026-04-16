@@ -124,7 +124,6 @@ export async function generatePersonalizedGoalPlan(input: GoalRequest): Promise<
         ],
         temperature: 0,
         top_k: 1,
-        result_format: "message",
       }),
     });
 

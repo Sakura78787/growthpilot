@@ -17,7 +17,6 @@ describe("ReviewSummary", () => {
     expect(screen.getByText("下周建议")).toBeInTheDocument();
     expect(screen.getByText("你本周已经完成了 68% 的关键动作。")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "回到成长驾驶舱" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getByRole("link", { name: "查看 PM 数据后台" })).toHaveAttribute("href", "/console");
     expect(screen.getByRole("link", { name: "打开成长档案" })).toHaveAttribute("href", "/profile");
   });
 });

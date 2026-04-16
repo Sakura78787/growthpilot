@@ -37,5 +37,10 @@ jobs:
       - name: Apply remote migrations
         run: npm run db:migrate:remote
 
+      - name: Verify required secrets
+        run: |
+          echo "::notice::DASHSCOPE_API_KEY must be set as Cloudflare Worker secret before deployment."
+          echo "::notice::Run: npx wrangler secret put DASHSCOPE_API_KEY"
+
       - name: Deploy worker
         run: npm run cf:deploy

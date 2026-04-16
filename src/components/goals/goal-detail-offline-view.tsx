@@ -5,7 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 
 import { GoalTimeline } from "@/components/goals/goal-timeline";
 import { SiteShell } from "@/components/layout/site-shell";
-import { readOfflineGoalPlan, type OfflineGoalPlanPayload } from "@/lib/client/offline-goal-plan";
+import {
+  readLastGoalId,
+  readOfflineGoalPlan,
+  type OfflineGoalPlanPayload,
+} from "@/lib/client/offline-goal-plan";
 import { buildFallbackGoalDetail, buildGoalDetailViewModel } from "@/lib/db/queries/goals";
 import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
@@ -18,7 +22,14 @@ type Props = {
 export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory }: Props) {
   const [stored, setStored] = useState<OfflineGoalPlanPayload | null>(null);
   useEffect(() => {
-    setStored(readOfflineGoalPlan(goalId));
+    let storedPlan = readOfflineGoalPlan(goalId);
+    if (!storedPlan) {
+      const lastGoalId = readLastGoalId();
+      if (lastGoalId) {
+        storedPlan = readOfflineGoalPlan(lastGoalId);
+      }
+    }
+    setStored(storedPlan);
   }, [goalId]);
 
   const detailView = useMemo(() => {

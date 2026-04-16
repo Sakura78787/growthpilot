@@ -23,9 +23,6 @@ export function InsightPanel() {
         <Link href="/review" className="secondary-link">
           查看本周复盘
         </Link>
-        <Link href="/console" className="secondary-link">
-          去看 PM 数据后台
-        </Link>
       </div>
     </section>
   );

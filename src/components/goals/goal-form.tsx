@@ -1,9 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import type { GoalPlanSeed } from "@/lib/mock/seed-data";
-import { saveOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
+import { saveLastGoalId, saveOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
 
 type GoalApiResponse = {
   ok: boolean;
@@ -19,6 +20,7 @@ type GoalApiResponse = {
 };
 
 export function GoalForm() {
+  const router = useRouter();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -54,6 +56,7 @@ export function GoalForm() {
           planReason: data.planReason ?? "已生成计划。",
           planSource: data.planSource ?? "rules",
         });
+        saveLastGoalId(data.goal.id);
       }
 
       const nextUrl = new URL("/dashboard", window.location.origin);
@@ -62,7 +65,7 @@ export function GoalForm() {
       nextUrl.searchParams.set("goalCategory", data.goal.category);
       nextUrl.searchParams.set("planSource", data.planSource ?? "rules");
       nextUrl.searchParams.set("planReason", data.planReason ?? "已按规则模板生成");
-      window.location.assign(nextUrl.toString());
+      (router.push as (href: string) => void)(nextUrl.toString());
     } catch {
       setFeedback("当前网络有点慢，再试一次就好。");
     }

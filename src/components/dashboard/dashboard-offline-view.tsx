@@ -5,7 +5,11 @@ import { useEffect, useState } from "react";
 import { InsightPanel } from "@/components/dashboard/insight-panel";
 import { TodayPanel } from "@/components/dashboard/today-panel";
 import { SiteShell } from "@/components/layout/site-shell";
-import { readOfflineGoalPlan, type OfflineGoalPlanPayload } from "@/lib/client/offline-goal-plan";
+import {
+  readLastGoalId,
+  readOfflineGoalPlan,
+  type OfflineGoalPlanPayload,
+} from "@/lib/client/offline-goal-plan";
 import { buildGoalPlan, type GoalCategory } from "@/lib/mock/seed-data";
 
 type Props = {
@@ -23,10 +27,17 @@ export function DashboardOfflineView({
   planSourceFromUrl,
   planReasonFromUrl,
 }: Props) {
-  // sessionStorage is only available after mount; reading it during render breaks SSR hydration.
+  // localStorage is only available after mount; reading it during render breaks SSR hydration.
   const [stored, setStored] = useState<OfflineGoalPlanPayload | null>(null);
   useEffect(() => {
-    setStored(readOfflineGoalPlan(goalId));
+    let storedPlan = readOfflineGoalPlan(goalId);
+    if (!storedPlan) {
+      const lastGoalId = readLastGoalId();
+      if (lastGoalId) {
+        storedPlan = readOfflineGoalPlan(lastGoalId);
+      }
+    }
+    setStored(storedPlan);
   }, [goalId]);
 
   const plan = stored?.planSeed ?? buildGoalPlan({ title: goalTitle, category: goalCategory });

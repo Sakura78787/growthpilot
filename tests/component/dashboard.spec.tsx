@@ -1,9 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { InsightPanel } from "@/components/dashboard/insight-panel";
 import { TodayPanel } from "@/components/dashboard/today-panel";
 import { GoalForm } from "@/components/goals/goal-form";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 describe("GoalForm", () => {
   it("renders onboarding fields including v2 personalization inputs", () => {
@@ -38,6 +42,5 @@ describe("Dashboard panels", () => {
     expect(screen.getByRole("link", { name: "开始今天的关键动作" })).toHaveAttribute("href", "/focus");
     expect(screen.getByText("本周一句洞察")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "查看本周复盘" })).toHaveAttribute("href", "/review");
-    expect(screen.getByRole("link", { name: "去看 PM 数据后台" })).toHaveAttribute("href", "/console");
   });
 });

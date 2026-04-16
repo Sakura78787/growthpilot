@@ -8,6 +8,13 @@ import { listAllTasks, listTaskLogs } from "@/lib/db/queries/tasks";
 
 export const dynamic = "force-dynamic";
 
+let pendingReviewCache: Promise<{
+  summary: string;
+  advice: string;
+  highlights: string[];
+  description: string;
+}> | null = null;
+
 export default async function ReviewPage() {
   const env = await getOptionalCloudflareEnv();
   const db = env?.DB ? getDb(env) : null;
@@ -53,13 +60,16 @@ export default async function ReviewPage() {
     }
   }
 
-  const review = await generateWeeklyReview();
+  if (!pendingReviewCache) {
+    pendingReviewCache = generateWeeklyReview().then((review) => ({
+      ...review,
+      description: "当前没有数据库里的复盘记录，所以先根据已记录的任务状态和执行感受即时生成一版中文复盘。",
+    }));
+  }
+  const review = await pendingReviewCache;
 
   return (
-    <SiteShell
-      title="本周复盘"
-      description="把执行感受翻译成中文结论和下周建议，让复盘这件事不再像写检讨。"
-    >
+    <SiteShell title="本周复盘" description={review.description}>
       <ReviewSummary summary={review.summary} advice={review.advice} highlights={review.highlights} />
     </SiteShell>
   );

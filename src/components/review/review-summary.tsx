@@ -34,9 +34,6 @@ export function ReviewSummary({ summary, advice, highlights = [] }: ReviewSummar
         <Link href="/dashboard" className="secondary-link">
           回到成长驾驶舱
         </Link>
-        <Link href="/console" className="secondary-link">
-          查看 PM 数据后台
-        </Link>
         <Link href="/profile" className="secondary-link">
           打开成长档案
         </Link>
