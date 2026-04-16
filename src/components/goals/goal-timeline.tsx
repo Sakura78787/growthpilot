@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { GoalTimelineMilestoneView, GoalTimelineTaskView } from "@/lib/db/queries/goals";
 
 type GoalTimelineProps = {
+  goalId: string;
   progressLabel: string;
   nextActionTitle: string;
   nextActionMeta: string;
@@ -34,12 +35,15 @@ function TaskList({ items }: { items: GoalTimelineTaskView[] }) {
 }
 
 export function GoalTimeline({
+  goalId,
   progressLabel,
   nextActionTitle,
   nextActionMeta,
   milestones,
   looseTasks = [],
 }: GoalTimelineProps) {
+  const focusHref = `/focus?goalId=${encodeURIComponent(goalId)}`;
+
   return (
     <section className="shell-panel shell-panel-soft">
       <div className="detail-banner goal-timeline-banner">
@@ -54,7 +58,7 @@ export function GoalTimeline({
           <span className="mini-label">今天最适合推进</span>
           <strong>{nextActionTitle}</strong>
           <p>{nextActionMeta}</p>
-          <Link href="/focus" className="primary-button">
+          <Link href={focusHref} className="primary-button">
             去今日行动页
           </Link>
         </div>

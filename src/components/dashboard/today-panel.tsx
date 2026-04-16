@@ -4,11 +4,14 @@ export function TodayPanel({
   streak,
   tasks,
   preferredWindow,
+  focusGoalId,
 }: {
   streak: number;
   tasks: Array<{ id: string; title: string; status: "todo" | "doing" | "done" | "skipped" }>;
   /** 有数据时展示偏好时段；无则通用文案 */
   preferredWindow?: string | null;
+  /** 传给 /focus?goalId=，便于离线或与当前主目标对齐 */
+  focusGoalId?: string;
 }) {
   const statusLabel = {
     todo: "待开始",
@@ -22,6 +25,11 @@ export function TodayPanel({
   const taskMeta = windowLabel
     ? `适合在 ${windowLabel} 推进`
     : "按自身节奏推进";
+
+  const focusHref =
+    focusGoalId && focusGoalId.trim().length > 0
+      ? `/focus?goalId=${encodeURIComponent(focusGoalId.trim())}`
+      : "/focus";
 
   return (
     <section className="shell-panel shell-panel-strong">
@@ -43,7 +51,7 @@ export function TodayPanel({
         ))}
       </ul>
 
-      <Link href="/focus" className="primary-button">
+      <Link href={focusHref} className="primary-button">
         开始今天的关键动作
       </Link>
     </section>

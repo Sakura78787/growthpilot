@@ -87,7 +87,7 @@ function buildBadges(goalsInput: ProfileGoalRecord[], streak: number, reviewsInp
     badges.push("轻量起步派");
   }
 
-  badges.push(reviewsInput.length > 0 ? "会复盘" : "边做边校准");
+  badges.push("持续积累");
   return badges;
 }
 
@@ -126,8 +126,8 @@ export function buildProfileViewFromRecords(input: {
   const preferredWindowLabel = buildPreferredWindow(input.reviews, input.tasks);
   const firstDelayReason = input.taskLogs.find((log) => Boolean(log.delayReason))?.delayReason;
   const fallbackAdvice = firstDelayReason
-    ? `下周优先把“${firstDelayReason}”相关任务继续拆小。`
-    : `下周继续把动作放在 ${preferredWindowLabel}，先从能在 20 分钟内开始的一步起步。`;
+    ? `下周优先处理「${firstDelayReason || "阻碍"}」相关任务。`
+    : `下周建议在 ${preferredWindowLabel} 安排一个可启动的核心动作。`;
 
   return {
     headline,

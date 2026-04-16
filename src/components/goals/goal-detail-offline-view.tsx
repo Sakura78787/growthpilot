@@ -90,7 +90,7 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
             <Link href={`/dashboard?goalId=${detailView.goalId}`} className="secondary-link">
               返回成长驾驶舱
             </Link>
-            <Link href="/focus" className="primary-button">
+            <Link href={`/focus?goalId=${encodeURIComponent(detailView.goalId)}`} className="primary-button">
               继续今日行动
             </Link>
           </div>
@@ -98,6 +98,7 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
       </section>
 
       <GoalTimeline
+        goalId={detailView.goalId}
         progressLabel={detailView.progressLabel}
         nextActionTitle={detailView.nextAction?.title ?? "选择一个 20 分钟内的动作开始"}
         nextActionMeta={detailView.nextAction?.meta ?? "先开始第一步"}

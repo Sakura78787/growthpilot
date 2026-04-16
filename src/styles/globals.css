@@ -461,6 +461,10 @@ a {
   flex-wrap: wrap;
 }
 
+.focus-offline-skeleton {
+  min-height: 140px;
+}
+
 .focus-card {
   display: grid;
   gap: 18px;

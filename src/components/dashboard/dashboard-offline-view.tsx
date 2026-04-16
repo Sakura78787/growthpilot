@@ -55,7 +55,7 @@ export function DashboardOfflineView({ goalId, goalTitle, goalCategory }: Props)
       description="将目标拆解为今日可执行的具体动作。"
     >
       <div className="dashboard-grid">
-        <TodayPanel streak={streak} tasks={tasks} />
+        <TodayPanel streak={streak} tasks={tasks} preferredWindow={null} focusGoalId={goalId} />
         <InsightPanel goalDetailHref={detailHref} />
       </div>
 

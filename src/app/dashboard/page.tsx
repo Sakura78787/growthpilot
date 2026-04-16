@@ -52,6 +52,7 @@ export default async function DashboardPage({
             streak={Math.max(1, view.tasks.filter((task) => task.status !== "todo").length)}
             tasks={view.tasks}
             preferredWindow={insight?.preferredWindowLabel}
+            focusGoalId={view.goalId}
           />
           <InsightPanel
             preferredWindow={insight?.preferredWindowLabel}

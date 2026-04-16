@@ -6,7 +6,12 @@ import { useEffect, useState } from "react";
 import { FocusSessionCard } from "@/components/focus/focus-session-card";
 import { readLastGoalId, readOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
 
-export function FocusOfflineView() {
+type FocusOfflineViewProps = {
+  /** 来自 /focus?goalId=，优先于 lastGoalId 解析本地计划 */
+  initialGoalId?: string;
+};
+
+export function FocusOfflineView({ initialGoalId }: FocusOfflineViewProps) {
   const [taskInfo, setTaskInfo] = useState<{
     goalId: string;
     id: string;
@@ -16,26 +21,43 @@ export function FocusOfflineView() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const lastGoalId = readLastGoalId();
-    if (lastGoalId) {
-      const stored = readOfflineGoalPlan(lastGoalId);
-      if (stored?.planSeed) {
-        const firstTask = stored.planSeed.tasks[0];
-        if (firstTask) {
-          setTaskInfo({
-            goalId: lastGoalId,
-            id: `${lastGoalId}-task-1`,
-            title: firstTask.title,
-            duration: firstTask.suggestedDuration,
-          });
-        }
+    const preferredId = initialGoalId?.trim() || null;
+
+    const tryResolve = (goalKey: string | null) => {
+      if (!goalKey) {
+        return null;
       }
+      const stored = readOfflineGoalPlan(goalKey);
+      const firstTask = stored?.planSeed?.tasks[0];
+      if (!firstTask) {
+        return null;
+      }
+      return {
+        goalId: goalKey,
+        id: `${goalKey}-task-1`,
+        title: firstTask.title,
+        duration: firstTask.suggestedDuration,
+      };
+    };
+
+    let resolved = tryResolve(preferredId);
+    if (!resolved) {
+      const lastGoalId = readLastGoalId();
+      resolved = tryResolve(lastGoalId);
     }
+
+    setTaskInfo(resolved);
     setReady(true);
-  }, []);
+  }, [initialGoalId]);
 
   if (!ready) {
-    return null;
+    return (
+      <section className="shell-panel shell-panel-strong focus-offline-skeleton" aria-busy="true">
+        <p className="section-chip">今日行动</p>
+        <p className="panel-title">加载中…</p>
+        <p className="panel-copy">正在读取本地计划与任务。</p>
+      </section>
+    );
   }
 
   if (taskInfo) {

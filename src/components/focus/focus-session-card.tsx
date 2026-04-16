@@ -12,9 +12,10 @@ const starterActions = [
 ];
 
 type FocusSessionCardProps = {
+  /** 无 DB 时的占位 id，应与离线计划一致 */
   taskId?: string;
-  taskTitle?: string;
-  plannedDuration?: number;
+  taskTitle: string;
+  plannedDuration: number;
   /** 完成后「查看目标详情」跳转；不传则该链接指向成长驾驶舱 */
   goalDetailHref?: string;
 };
@@ -23,8 +24,8 @@ type SessionPhase = "idle" | "active" | "done";
 
 export function FocusSessionCard({
   taskId = "task-demo-1",
-  taskTitle = "完成 20 分钟简历优化",
-  plannedDuration = 20,
+  taskTitle,
+  plannedDuration,
   goalDetailHref,
 }: FocusSessionCardProps) {
   const [phase, setPhase] = useState<SessionPhase>("idle");

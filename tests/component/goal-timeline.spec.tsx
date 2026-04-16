@@ -7,6 +7,7 @@ describe("GoalTimeline", () => {
   it("renders the milestone timeline, progress summary, and next action CTA", () => {
     render(
       <GoalTimeline
+        goalId="goal-test-1"
         progressLabel="已完成 1 / 3 个关键动作"
         nextActionTitle="补一张流程图"
         nextActionMeta="预计 20 分钟 · 正在推进"
@@ -55,6 +56,9 @@ describe("GoalTimeline", () => {
     expect(screen.getByText("先补齐作品集与简历底稿")).toBeInTheDocument();
     expect(screen.getAllByText("补一张流程图")).toHaveLength(2);
     expect(screen.getByText("卡点：任务太大")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "去今日行动页" })).toHaveAttribute("href", "/focus");
+    expect(screen.getByRole("link", { name: "去今日行动页" })).toHaveAttribute(
+      "href",
+      "/focus?goalId=goal-test-1",
+    );
   });
 });

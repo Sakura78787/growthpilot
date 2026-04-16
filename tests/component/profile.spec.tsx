@@ -8,7 +8,7 @@ describe("ProfileSummary", () => {
     render(
       <ProfileSummary
         headline="做出两个能投产品经理暑期实习的项目"
-        badges={["求职推进型", "连续行动中", "会复盘"]}
+        badges={["求职推进型", "连续行动中", "持续积累"]}
         streakLabel="连续行动 3 天"
         preferredWindowLabel="20:00 - 22:00"
         recentHighlight="已完成 2 个关键动作，1 个正在推进。"

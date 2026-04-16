@@ -7,11 +7,25 @@ import { getFocusTask } from "@/lib/db/queries/tasks";
 
 export const dynamic = "force-dynamic";
 
-export default async function FocusPage() {
+type SearchParamValue = string | string[] | undefined;
+
+function pickFirst(value: SearchParamValue) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function FocusPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, SearchParamValue>>;
+}) {
+  const params = await searchParams;
+  const goalIdParam = pickFirst(params.goalId)?.trim();
+  const goalId = goalIdParam && goalIdParam.length > 0 ? goalIdParam : undefined;
+
   const env = await getOptionalCloudflareEnv();
   const db = env?.DB ? getDb(env) : null;
   const focusTask = db
-    ? await runWithOptionalDbFallback(() => getFocusTask(db), null)
+    ? await runWithOptionalDbFallback(() => getFocusTask(db, { goalId }), null)
     : null;
 
   return (
@@ -27,7 +41,7 @@ export default async function FocusPage() {
           goalDetailHref={`/goals/${focusTask.goalId}`}
         />
       ) : (
-        <FocusOfflineView />
+        <FocusOfflineView initialGoalId={goalId} />
       )}
     </SiteShell>
   );
