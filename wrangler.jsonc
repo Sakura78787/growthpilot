@@ -18,12 +18,12 @@
     {
       "binding": "DB",
       "database_name": "growthpilot-db",
-      "database_id": "YOUR_D1_DATABASE_ID_HERE",
+      "database_id": "bc9c5e28-b1c5-4467-b947-28335939bd69",
       "migrations_dir": "drizzle"
     }
   ],
   "vars": {
-    "LLM_BASE_URL": "YOUR_LLM_BASE_URL_HERE",
-    "LLM_MODEL": "YOUR_LLM_MODEL_HERE"
+    "LLM_BASE_URL": "https://opencode.ai/zen/go/v1",
+    "LLM_MODEL": "qwen3.5-plus"
   }
 }
