@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { generateWeeklyReview } from "@/lib/ai/review-generator";
+import { type ReviewGeneratorOptions, generateWeeklyReview } from "@/lib/ai/review-generator";
 import { trackEvent } from "@/lib/analytics/events";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
 
   const env = await getOptionalCloudflareEnv();
   const db = env?.DB ? getDb(env) : null;
+  const aiOptions: ReviewGeneratorOptions = {
+    apiKey: (env?.DASHSCOPE_API_KEY as string | undefined) || process.env.DASHSCOPE_API_KEY,
+    model: (env?.DASHSCOPE_MODEL as string | undefined) || process.env.DASHSCOPE_MODEL,
+  };
 
   if (db) {
     const persistedReview = await runWithOptionalDbFallback(async () => {
@@ -32,7 +36,7 @@ export async function POST(request: NextRequest) {
         averageEnergyLevel: payload.averageEnergyLevel ?? source.averageEnergyLevel,
         recentNotes: payload.recentNotes ?? source.recentNotes,
       };
-      const review = await generateWeeklyReview(merged);
+      const review = await generateWeeklyReview(merged, aiOptions);
 
       await createReviewRecord(db, {
         ...merged,
@@ -54,5 +58,5 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(await generateWeeklyReview(payload));
+  return NextResponse.json(await generateWeeklyReview(payload, aiOptions));
 }

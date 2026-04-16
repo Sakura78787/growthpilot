@@ -7,6 +7,11 @@ import {
 
 const defaultModel = "tongyi-xiaomi-analysis-flash";
 
+export type ReviewGeneratorOptions = {
+  apiKey?: string;
+  model?: string;
+};
+
 const defaultReviewInput: WeeklyReviewFallbackInput = {
   completionRate: 68,
   topDelayReason: "任务太大",
@@ -39,10 +44,11 @@ function normalizeReviewField(value: unknown, fallback: string) {
 
 async function generatePersonalizedReview(
   input: WeeklyReviewFallbackInput,
+  options?: ReviewGeneratorOptions,
 ): Promise<WeeklyReviewFallback> {
   const fallback = buildWeeklyReviewFallback(input);
-  const apiKey = process.env.DASHSCOPE_API_KEY?.trim();
-  const model = process.env.DASHSCOPE_MODEL?.trim() || defaultModel;
+  const apiKey = options?.apiKey?.trim() || process.env.DASHSCOPE_API_KEY?.trim();
+  const model = options?.model?.trim() || process.env.DASHSCOPE_MODEL?.trim() || defaultModel;
 
   if (!apiKey) {
     return fallback;
@@ -124,7 +130,8 @@ async function generatePersonalizedReview(
 
 export async function generateWeeklyReview(
   input: Partial<WeeklyReviewFallbackInput> = {},
+  options?: ReviewGeneratorOptions,
 ): Promise<WeeklyReviewFallback> {
   const merged = mergeWeeklyReviewInput(input);
-  return generatePersonalizedReview(merged);
+  return generatePersonalizedReview(merged, options);
 }

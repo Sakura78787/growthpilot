@@ -1,6 +1,6 @@
 import { SiteShell } from "@/components/layout/site-shell";
 import { ReviewSummary } from "@/components/review/review-summary";
-import { generateWeeklyReview } from "@/lib/ai/review-generator";
+import { type ReviewGeneratorOptions, generateWeeklyReview } from "@/lib/ai/review-generator";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
 import { buildReviewSourceFromTasks, buildReviewViewModel, getLatestReview } from "@/lib/db/queries/reviews";
@@ -18,6 +18,10 @@ let pendingReviewCache: Promise<{
 export default async function ReviewPage() {
   const env = await getOptionalCloudflareEnv();
   const db = env?.DB ? getDb(env) : null;
+  const aiOptions: ReviewGeneratorOptions = {
+    apiKey: (env?.DASHSCOPE_API_KEY as string | undefined) || process.env.DASHSCOPE_API_KEY,
+    model: (env?.DASHSCOPE_MODEL as string | undefined) || process.env.DASHSCOPE_MODEL,
+  };
 
   if (db) {
     const reviewPayload = await runWithOptionalDbFallback(async () => {
@@ -34,7 +38,7 @@ export default async function ReviewPage() {
 
       const [taskRows, taskLogRows] = await Promise.all([listAllTasks(db), listTaskLogs(db)]);
       const source = buildReviewSourceFromTasks(taskRows, taskLogRows);
-      const review = await generateWeeklyReview(source);
+      const review = await generateWeeklyReview(source, aiOptions);
 
       return {
         ...review,
@@ -61,7 +65,7 @@ export default async function ReviewPage() {
   }
 
   if (!pendingReviewCache) {
-    pendingReviewCache = generateWeeklyReview().then((review) => ({
+    pendingReviewCache = generateWeeklyReview(undefined, aiOptions).then((review) => ({
       ...review,
       description: "当前没有数据库里的复盘记录，所以先根据已记录的任务状态和执行感受即时生成一版中文复盘。",
     }));

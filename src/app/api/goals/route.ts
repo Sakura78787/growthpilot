@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { generatePersonalizedGoalPlan } from "@/lib/ai/goal-planner";
+import { type GoalPlannerOptions, generatePersonalizedGoalPlan } from "@/lib/ai/goal-planner";
 import { trackEvent } from "@/lib/analytics/events";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
@@ -12,7 +12,12 @@ import { goalRequestSchema } from "@/lib/validation/goals";
 export async function POST(request: NextRequest) {
   try {
     const payload = goalRequestSchema.parse(await request.json());
-    const personalized = await generatePersonalizedGoalPlan(payload);
+    const env = await getOptionalCloudflareEnv();
+    const aiOptions: GoalPlannerOptions = {
+      apiKey: (env?.DASHSCOPE_API_KEY as string | undefined) || process.env.DASHSCOPE_API_KEY,
+      model: (env?.DASHSCOPE_MODEL as string | undefined) || process.env.DASHSCOPE_MODEL,
+    };
+    const personalized = await generatePersonalizedGoalPlan(payload, aiOptions);
 
     const profileSnapshot = {
       currentLevel: payload.currentLevel,
@@ -22,7 +27,6 @@ export async function POST(request: NextRequest) {
       planReason: personalized.planReason,
     } as const;
 
-    const env = await getOptionalCloudflareEnv();
     const db = env?.DB ? getDb(env) : null;
 
     const graph = db

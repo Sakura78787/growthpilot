@@ -9,6 +9,11 @@ export type PersonalizedGoalPlan = {
   planReason: string;
 };
 
+export type GoalPlannerOptions = {
+  apiKey?: string;
+  model?: string;
+};
+
 const defaultModel = "tongyi-xiaomi-analysis-flash";
 
 function normalizeTitle(value: unknown, fallback: string) {
@@ -86,10 +91,13 @@ export function buildGoalPlannerFallback(input: GoalRequest): PersonalizedGoalPl
   };
 }
 
-export async function generatePersonalizedGoalPlan(input: GoalRequest): Promise<PersonalizedGoalPlan> {
+export async function generatePersonalizedGoalPlan(
+  input: GoalRequest,
+  options?: GoalPlannerOptions,
+): Promise<PersonalizedGoalPlan> {
   const fallback = buildGoalPlannerFallback(input);
-  const apiKey = process.env.DASHSCOPE_API_KEY?.trim();
-  const model = process.env.DASHSCOPE_MODEL?.trim() || defaultModel;
+  const apiKey = options?.apiKey?.trim() || process.env.DASHSCOPE_API_KEY?.trim();
+  const model = options?.model?.trim() || process.env.DASHSCOPE_MODEL?.trim() || defaultModel;
 
   if (!apiKey) {
     return fallback;

@@ -1,3 +1,4 @@
+import { FocusOfflineView } from "@/components/focus/focus-offline-view";
 import { FocusSessionCard } from "@/components/focus/focus-session-card";
 import { SiteShell } from "@/components/layout/site-shell";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
@@ -25,16 +26,7 @@ export default async function FocusPage() {
           plannedDuration={focusTask.plannedDuration}
         />
       ) : (
-        <section className="shell-panel shell-panel-strong focus-card">
-          <p className="section-chip">今日关键动作</p>
-          <h2 className="panel-title">还没有正在推进的任务</h2>
-          <p className="panel-copy">
-            先去「开始计划」创建你的第一个目标，系统会自动帮你拆成今天能开始的小动作。
-          </p>
-          <a href="/onboarding" className="primary-button">
-            去创建目标
-          </a>
-        </section>
+        <FocusOfflineView />
       )}
     </SiteShell>
   );
