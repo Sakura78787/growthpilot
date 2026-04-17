@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 :root {
   --gp-cream: #f7f2e8;
@@ -451,6 +451,39 @@ a {
 .form-tip-copy,
 .form-feedback {
   margin: 0;
+}
+
+.plan-progress-container {
+  display: grid;
+  gap: 10px;
+  padding: 14px 0 4px;
+}
+
+.plan-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+}
+
+.plan-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e8d2a2, #d7e6f4);
+  transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.plan-progress-label {
+  margin: 0;
+  font-size: 14px;
+  color: var(--gp-muted);
+  animation: plan-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes plan-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 .detail-banner {

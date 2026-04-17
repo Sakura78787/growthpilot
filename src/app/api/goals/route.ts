@@ -4,7 +4,7 @@ import { ZodError } from "zod";
 import { generatePersonalizedGoalPlan } from "@/lib/ai/goal-planner";
 import { resolveAiOptionsFromEnv } from "@/lib/ai/resolve-ai-options";
 import { trackEvent } from "@/lib/analytics/events";
-import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
+import { getOptionalCloudflareEnv } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
 import { buildGoalGraph } from "@/lib/db/mappers";
 import { createGoalWithPlan } from "@/lib/db/queries/goals";
@@ -25,37 +25,30 @@ export async function POST(request: NextRequest) {
       planReason: personalized.planReason,
     } as const;
 
+    const graph = buildGoalGraph(payload, {
+      plan: personalized.plan,
+      profileSnapshot,
+    });
+
     const db = env?.DB ? getDb(env) : null;
-
-    const graph = db
-      ? await runWithOptionalDbFallback(
-          async () => {
-            const created = await createGoalWithPlan(db, payload, {
-              plan: personalized.plan,
-              profileSnapshot,
-            });
-
-            await trackEvent(db, {
-              userId: created.goal.userId,
-              eventName: "goal.created",
-              eventPayload: {
-                goalId: created.goal.id,
-                category: created.goal.category,
-                planSource: personalized.planSource,
-              },
-            });
-
-            return created;
-          },
-          buildGoalGraph(payload, {
-            plan: personalized.plan,
-            profileSnapshot,
-          }),
-        )
-      : buildGoalGraph(payload, {
-          plan: personalized.plan,
-          profileSnapshot,
-        });
+    if (db) {
+      createGoalWithPlan(db, payload, {
+        plan: personalized.plan,
+        profileSnapshot,
+      })
+        .then((created) => {
+          trackEvent(db, {
+            userId: created.goal.userId,
+            eventName: "goal.created",
+            eventPayload: {
+              goalId: created.goal.id,
+              category: created.goal.category,
+              planSource: personalized.planSource,
+            },
+          }).catch(() => {});
+        })
+        .catch(() => {});
+    }
 
     return NextResponse.json({
       ok: true,

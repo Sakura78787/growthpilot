@@ -106,34 +106,35 @@ export function buildGoalPlannerFallback(input: GoalRequest): PersonalizedGoalPl
   };
 }
 
+const LLM_TIMEOUT_MS = 15_000;
+
 export async function generatePersonalizedGoalPlan(
   input: GoalRequest,
   options?: GoalPlannerOptions,
 ): Promise<PersonalizedGoalPlan> {
-  const fallback = buildGoalPlannerFallback(input);
   const config = resolveLlmConfig(
     options?.llm ? { apiKey: options.llm.apiKey, baseUrl: options.llm.baseUrl, model: options.llm.model } : undefined,
   );
 
   if (!config) {
-    return fallback;
+    return buildGoalPlannerFallback(input);
   }
 
   const prompt = [
-    "你是中文产品成长教练。请根据用户输入，生成可执行的目标拆解。",
-    "里程碑数量须在 2～4 个之间；关键动作数量须在 3～6 个之间（按难度与周期自行决定，不要机械凑数）。",
-    "请结合用户的当前基础、每日可用时长、主要阻碍，决定拆解粒度：零基础可更细，有经验可更偏产出。",
-    "要求：内容具体、可开始、适合中国大陆大学生；每个动作的 suggestedDuration 为 15-120 之间的整数（分钟）。",
-    "只输出一个 JSON 对象：不要使用 markdown、不要代码围栏、不要前后解释或多余文字。",
-    "字段名必须为 planReason、milestones、tasks；milestones 为 2～4 项数组，tasks 为 3～6 项数组。",
-    "示例结构（请替换为你的内容）：",
-    '{ "planReason": "一句解释", "milestones":[{"title":"...","targetDateLabel":"..."}], "tasks":[{"title":"...","bucket":"...","suggestedDuration":20}] }',
+    "你是中文产品成长教练。根据用户输入生成目标拆解，只输出一个合法 JSON 对象。",
+    "里程碑 2～4 个，关键动作 3～6 个，结合用户基础、每日时长、主要阻碍决定拆解粒度。",
+    "内容具体可开始，适合中国大陆大学生；suggestedDuration 为 15-120 的整数分钟。",
+    "字段名：planReason、milestones、tasks。",
+    '示例：{ "planReason": "一句解释", "milestones":[{"title":"...","targetDateLabel":"..."}], "tasks":[{"title":"...","bucket":"...","suggestedDuration":20}] }',
     `目标：${input.title}`,
     `类型：${input.category}`,
     `当前基础：${input.currentLevel}`,
     `每日可投入时长：${input.dailyMinutes} 分钟`,
     `主要阻碍：${input.mainBlocker}`,
   ].join("\n");
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${config.baseUrl}/chat/completions`, {
@@ -145,17 +146,20 @@ export async function generatePersonalizedGoalPlan(
       body: JSON.stringify({
         model: config.model,
         messages: [
-          { role: "system", content: "你只输出合法 JSON 对象一行或多行均可，禁止 markdown 与任何非 JSON 内容。" },
+          { role: "system", content: "只输出合法 JSON 对象，禁止 markdown 与任何非 JSON 内容。" },
           { role: "user", content: prompt },
         ],
         temperature: 0.4,
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorBody = await response.text();
       console.error("LLM API Error (goal-planner):", response.status, errorBody);
-      return fallback;
+      return buildGoalPlannerFallback(input);
     }
 
     const payload = (await response.json()) as {
@@ -163,23 +167,25 @@ export async function generatePersonalizedGoalPlan(
     };
     const content = payload.choices?.[0]?.message?.content?.trim();
     if (!content) {
-      return fallback;
+      return buildGoalPlannerFallback(input);
     }
 
     const jsonSource = extractJsonObject(content);
     if (!jsonSource) {
-      return fallback;
+      return buildGoalPlannerFallback(input);
     }
 
     const parsed = JSON.parse(jsonSource) as Record<string, unknown>;
+    const fallback = buildGoalPlannerFallback(input);
 
     return {
       plan: normalizeGoalPlan(parsed, fallback.plan),
       planSource: "llm",
-      planReason: normalizeTitle(parsed["planReason"], "模型已根据你的输入做了轻量个性化改写。"),
+      planReason: normalizeTitle(parsed["planReason"], "模型已根据你的输入做了个性化拆解。"),
     };
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error("LLM Fetch Exception (goal-planner):", error);
-    return fallback;
+    return buildGoalPlannerFallback(input);
   }
 }

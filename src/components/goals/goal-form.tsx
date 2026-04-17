@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import type { GoalPlanSeed } from "@/lib/mock/seed-data";
 import { saveLastGoalId, saveOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
@@ -19,10 +19,42 @@ type GoalApiResponse = {
   errors?: string[];
 };
 
+const STAGES = [
+  { label: "连接中", progress: 12 },
+  { label: "分析你的目标", progress: 35 },
+  { label: "生成个性化计划", progress: 60 },
+  { label: "整理计划内容", progress: 82 },
+  { label: "即将完成", progress: 95 },
+] as const;
+
 export function GoalForm() {
   const router = useRouter();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [stageIndex, setStageIndex] = useState(0);
+  const [animatedProgress, setAnimatedProgress] = useState(0);
+
+  useEffect(() => {
+    if (!isPending) {
+      setStageIndex(0);
+      setAnimatedProgress(0);
+      return;
+    }
+
+    let step = 0;
+    const advance = () => {
+      step++;
+      const idx = Math.min(step, STAGES.length - 1);
+      setStageIndex(idx);
+      setAnimatedProgress(STAGES[idx].progress);
+      if (idx < STAGES.length - 1) {
+        setTimeout(advance, 1200 + Math.random() * 800);
+      }
+    };
+
+    setAnimatedProgress(STAGES[0].progress);
+    setTimeout(advance, 800 + Math.random() * 400);
+  }, [isPending]);
 
   async function submitGoal(formData: FormData) {
     const payload = {
@@ -35,6 +67,9 @@ export function GoalForm() {
     };
 
     try {
+      setStageIndex(STAGES.length - 1);
+      setAnimatedProgress(98);
+
       const response = await fetch("/api/goals", {
         method: "POST",
         headers: {
@@ -49,6 +84,8 @@ export function GoalForm() {
         setFeedback(data.errors?.[0] ?? "计划生成失败，请稍后重试。");
         return;
       }
+
+      setAnimatedProgress(100);
 
       if (data.planSeed) {
         saveOfflineGoalPlan(data.goal.id, {
@@ -144,8 +181,20 @@ export function GoalForm() {
         </p>
       ) : null}
 
+      {isPending && (
+        <div className="plan-progress-container" role="status" aria-live="polite">
+          <div className="plan-progress-track">
+            <div
+              className="plan-progress-fill"
+              style={{ width: `${animatedProgress}%` }}
+            />
+          </div>
+          <p className="plan-progress-label">{STAGES[stageIndex].label}</p>
+        </div>
+      )}
+
       <button type="submit" className="primary-button" disabled={isPending}>
-        {isPending ? "正在生成..." : "开始规划"}
+        {isPending ? STAGES[stageIndex].label : "开始规划"}
       </button>
     </form>
   );
