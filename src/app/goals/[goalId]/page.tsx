@@ -5,9 +5,8 @@ import { GoalTimeline } from "@/components/goals/goal-timeline";
 import { SiteShell } from "@/components/layout/site-shell";
 import { getOptionalCloudflareEnv, runWithOptionalDbFallback } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
-import { buildFallbackGoalDetail, buildGoalDetailViewModel, getGoalDetail } from "@/lib/db/queries/goals";
+import { buildGoalDetailViewModel, getGoalDetail } from "@/lib/db/queries/goals";
 import { normalizeGoalCategory } from "@/lib/goal-category";
-import { buildGoalPlan } from "@/lib/mock/seed-data";
 
 const defaultGoalTitle = "做出两个能投产品经理暑期实习的项目";
 

@@ -74,7 +74,7 @@ function buildPreferredWindow(reviewsInput: ProfileReviewRecord[], tasksInput: P
   return tasksInput.some((task) => Boolean(task.actualStartTime)) ? "20:00 - 22:00" : "19:00 - 21:00";
 }
 
-function buildBadges(goalsInput: ProfileGoalRecord[], streak: number, reviewsInput: ProfileReviewRecord[]) {
+function buildBadges(goalsInput: ProfileGoalRecord[], streak: number) {
   const primaryGoal = goalsInput[0];
   const categoryKey = (primaryGoal && primaryGoal.category in goalCategoryLabels
     ? primaryGoal.category
@@ -131,7 +131,7 @@ export function buildProfileViewFromRecords(input: {
 
   return {
     headline,
-    badges: buildBadges(input.goals, streak, input.reviews),
+    badges: buildBadges(input.goals, streak),
     streakLabel: `连续行动 ${streak} 天`,
     preferredWindowLabel,
     recentHighlight: buildRecentHighlight(input.tasks, preferredWindowLabel),

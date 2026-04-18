@@ -29,7 +29,9 @@ export function GoalDetailOfflineView({ goalId, fallbackTitle, fallbackCategory 
         storedPlan = readOfflineGoalPlan(lastGoalId);
       }
     }
-    setStored(storedPlan);
+    queueMicrotask(() => {
+      setStored(storedPlan);
+    });
   }, [goalId]);
 
   const detailView = useMemo(() => {

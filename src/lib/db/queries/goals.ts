@@ -253,6 +253,13 @@ export function buildGoalDetailViewModel(input: {
   };
 }
 
+export async function persistGoalGraph(db: AppDb, graph: GoalGraph) {
+  await db.insert(users).values(graph.user).onConflictDoNothing();
+  await db.insert(goals).values(graph.goal);
+  await db.insert(milestones).values(graph.milestones);
+  await db.insert(tasks).values(graph.tasks);
+}
+
 export async function createGoalWithPlan(
   db: AppDb,
   input: GoalRequest,
@@ -262,12 +269,7 @@ export async function createGoalWithPlan(
   } = {},
 ) {
   const graph = buildGoalGraph(input, options);
-
-  await db.insert(users).values(graph.user).onConflictDoNothing();
-  await db.insert(goals).values(graph.goal);
-  await db.insert(milestones).values(graph.milestones);
-  await db.insert(tasks).values(graph.tasks);
-
+  await persistGoalGraph(db, graph);
   return graph;
 }
 

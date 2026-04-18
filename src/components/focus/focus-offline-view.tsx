@@ -46,8 +46,10 @@ export function FocusOfflineView({ initialGoalId }: FocusOfflineViewProps) {
       resolved = tryResolve(lastGoalId);
     }
 
-    setTaskInfo(resolved);
-    setReady(true);
+    queueMicrotask(() => {
+      setTaskInfo(resolved);
+      setReady(true);
+    });
   }, [initialGoalId]);
 
   if (!ready) {

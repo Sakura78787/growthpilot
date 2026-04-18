@@ -30,7 +30,9 @@ export function DashboardOfflineView({ goalId, goalTitle, goalCategory }: Props)
         storedPlan = readOfflineGoalPlan(lastGoalId);
       }
     }
-    setStored(storedPlan);
+    queueMicrotask(() => {
+      setStored(storedPlan);
+    });
   }, [goalId]);
 
   const plan = stored?.planSeed ?? buildGoalPlan({ title: goalTitle, category: goalCategory });

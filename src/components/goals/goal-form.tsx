@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { GoalPlanSeed } from "@/lib/mock/seed-data";
 import { saveLastGoalId, saveOfflineGoalPlan } from "@/lib/client/offline-goal-plan";
@@ -27,36 +27,58 @@ const STAGES = [
   { label: "即将完成", progress: 95 },
 ] as const;
 
+const MIN_PROGRESS_VISIBLE_MS = 550;
+const STAGE_ADVANCE_MS = 850;
+
 export function GoalForm() {
   const router = useRouter();
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const [animatedProgress, setAnimatedProgress] = useState(0);
+  const submitLockRef = useRef(false);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!isPending) {
-      setStageIndex(0);
-      setAnimatedProgress(0);
+    if (!isSubmitting) {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
       return;
     }
 
-    let step = 0;
-    const advance = () => {
-      step++;
-      const idx = Math.min(step, STAGES.length - 1);
-      setStageIndex(idx);
-      setAnimatedProgress(STAGES[idx].progress);
-      if (idx < STAGES.length - 1) {
-        setTimeout(advance, 1200 + Math.random() * 800);
+    let current = 0;
+    setStageIndex(0);
+    setAnimatedProgress(STAGES[0].progress);
+
+    const maxIdxBeforeDone = STAGES.length - 2;
+    progressIntervalRef.current = setInterval(() => {
+      current = Math.min(current + 1, maxIdxBeforeDone);
+      setStageIndex(current);
+      setAnimatedProgress(STAGES[current].progress);
+      if (current >= maxIdxBeforeDone && progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    }, STAGE_ADVANCE_MS);
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
       }
     };
+  }, [isSubmitting]);
 
-    setAnimatedProgress(STAGES[0].progress);
-    setTimeout(advance, 800 + Math.random() * 400);
-  }, [isPending]);
+  function clearProgressTimers() {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  }
 
-  async function submitGoal(formData: FormData) {
+  async function runSubmit(formData: FormData) {
     const payload = {
       title: String(formData.get("title") ?? ""),
       category: String(formData.get("category") ?? "job"),
@@ -66,10 +88,9 @@ export function GoalForm() {
       mainBlocker: String(formData.get("mainBlocker") ?? ""),
     };
 
-    try {
-      setStageIndex(STAGES.length - 1);
-      setAnimatedProgress(98);
+    const started = Date.now();
 
+    try {
       const response = await fetch("/api/goals", {
         method: "POST",
         headers: {
@@ -81,11 +102,17 @@ export function GoalForm() {
       const data = (await response.json()) as GoalApiResponse;
 
       if (!response.ok || !data.goal) {
+        clearProgressTimers();
         setFeedback(data.errors?.[0] ?? "计划生成失败，请稍后重试。");
+        setIsSubmitting(false);
+        setStageIndex(0);
+        setAnimatedProgress(0);
         return;
       }
 
+      clearProgressTimers();
       setAnimatedProgress(100);
+      setStageIndex(STAGES.length - 1);
 
       if (data.planSeed) {
         saveOfflineGoalPlan(data.goal.id, {
@@ -96,24 +123,40 @@ export function GoalForm() {
         saveLastGoalId(data.goal.id);
       }
 
+      const elapsed = Date.now() - started;
+      if (elapsed < MIN_PROGRESS_VISIBLE_MS) {
+        await new Promise((r) => setTimeout(r, MIN_PROGRESS_VISIBLE_MS - elapsed));
+      }
+
       const nextUrl = new URL("/dashboard", window.location.origin);
       nextUrl.searchParams.set("goalId", data.goal.id);
       nextUrl.searchParams.set("goalTitle", data.goal.title);
       nextUrl.searchParams.set("goalCategory", data.goal.category);
       (router.push as (href: string) => void)(nextUrl.toString());
     } catch {
+      clearProgressTimers();
       setFeedback("网络请求失败，请重试。");
+      setIsSubmitting(false);
+      setStageIndex(0);
+      setAnimatedProgress(0);
+    } finally {
+      submitLockRef.current = false;
     }
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitLockRef.current) {
+      return;
+    }
+    submitLockRef.current = true;
     setFeedback(null);
+    setIsSubmitting(true);
+    setStageIndex(0);
+    setAnimatedProgress(STAGES[0].progress);
 
     const formData = new FormData(event.currentTarget);
-    startTransition(() => {
-      void submitGoal(formData);
-    });
+    void runSubmit(formData);
   }
 
   return (
@@ -181,7 +224,7 @@ export function GoalForm() {
         </p>
       ) : null}
 
-      {isPending && (
+      {isSubmitting && (
         <div className="plan-progress-container" role="status" aria-live="polite">
           <div className="plan-progress-track">
             <div
@@ -193,8 +236,8 @@ export function GoalForm() {
         </div>
       )}
 
-      <button type="submit" className="primary-button" disabled={isPending}>
-        {isPending ? STAGES[stageIndex].label : "开始规划"}
+      <button type="submit" className="primary-button" disabled={isSubmitting}>
+        {isSubmitting ? STAGES[stageIndex].label : "开始规划"}
       </button>
     </form>
   );

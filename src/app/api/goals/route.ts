@@ -7,7 +7,7 @@ import { trackEvent } from "@/lib/analytics/events";
 import { getOptionalCloudflareEnv } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db/client";
 import { buildGoalGraph } from "@/lib/db/mappers";
-import { createGoalWithPlan } from "@/lib/db/queries/goals";
+import { persistGoalGraph } from "@/lib/db/queries/goals";
 import { goalRequestSchema } from "@/lib/validation/goals";
 
 export async function POST(request: NextRequest) {
@@ -32,22 +32,16 @@ export async function POST(request: NextRequest) {
 
     const db = env?.DB ? getDb(env) : null;
     if (db) {
-      createGoalWithPlan(db, payload, {
-        plan: personalized.plan,
-        profileSnapshot,
-      })
-        .then((created) => {
-          trackEvent(db, {
-            userId: created.goal.userId,
-            eventName: "goal.created",
-            eventPayload: {
-              goalId: created.goal.id,
-              category: created.goal.category,
-              planSource: personalized.planSource,
-            },
-          }).catch(() => {});
-        })
-        .catch(() => {});
+      await persistGoalGraph(db, graph);
+      trackEvent(db, {
+        userId: graph.goal.userId,
+        eventName: "goal.created",
+        eventPayload: {
+          goalId: graph.goal.id,
+          category: graph.goal.category,
+          planSource: personalized.planSource,
+        },
+      }).catch(() => {});
     }
 
     return NextResponse.json({
